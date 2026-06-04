@@ -1,6 +1,6 @@
-from scheduler.models import ScheduleItem
-from scheduler.constraints import TOTAL_SLOTS, can_place_surgery
-from scheduler.utils import priority_value
+from scheduling.services.backtracking.dto import ScheduleItem
+from scheduling.services.backtracking.constraints import TOTAL_SLOTS, can_place_surgery
+from scheduling.services.backtracking.utils import priority_value
 
 
 class BacktrackingScheduler:

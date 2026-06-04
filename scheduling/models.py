@@ -1,19 +1,40 @@
 from django.db import models
+import uuid
 
 # Create your models here.
 
 
 class BaseModel (models.Model) :
+    #TO DO: id oluşturulacak uuid türünde 
+    # created_at = models.DateTimeField(auto_now_add=True)
+    # updated_at = models.DateTimeField(auto_now=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    # class Meta:
+    #     abstract = True
+
+
+    id = models.UUIDField(
+        primary_key= True,
+        default= uuid.uuid4,
+        editable= False,
+    )
+
+    created_at = models.DateTimeField(auto_now_add = True)
+    updated_at = models.DateTimeField(auto_now= True )
+
 
     class Meta:
         abstract = True
 
+    
 
 
-class Specialty (BaseModel) :
+
+
+class Specialty(BaseModel):
+    """
+    Doktorun yetkinliğini tutar.
+    """
     name = models.CharField(max_length = 100, unique = True)
 
 
@@ -21,12 +42,16 @@ class Specialty (BaseModel) :
         return self.name
     
 
-class Surgeon (BaseModel) :
-    name = models.CharField(max_length = 100 )
+class Surgeon(BaseModel):
+    """
+    Cerrahları tutar.
+    """
+    name = models.CharField(max_length = 100, verbose_name="Cerrahın İsmi" )
     specialty = models.ForeignKey(
         Specialty,
         on_delete = models.PROTECT,
-        related_name = "surgeons" 
+        related_name = "surgeons", 
+        verbose_name="Cerrahın yetkinliği"
     )
 
     off_day = models.CharField(max_length = 20 )
@@ -70,7 +95,7 @@ class Patient ( BaseModel ) :
     
 
 class SurgeryType (BaseModel) :
-    name = models.CharField (max_length= 100, unique= True)
+    name = models.CharField (max_length= 100, )
     required_specialty = models. ForeignKey(
         Specialty,
         on_delete= models.PROTECT,
@@ -78,9 +103,11 @@ class SurgeryType (BaseModel) :
         
     )
 
-    competible_rooms = models.ManyToManyField(
+    duration_slots = models.PositiveIntegerField()
+
+    compatible_rooms = models.ManyToManyField(
         OperatingRoom,
-        related_name = "competible_surgery_types",
+        related_name = "compatible_surgery_types",
         blank = True,
 
     )
@@ -110,7 +137,7 @@ class SurgeryRequest ( BaseModel ):
         related_name="requests",
     )
 
-    duration = models.PositiveIntegerField()
+    # duration = models.PositiveIntegerField()
     priority = models.CharField (max_length= 20, choices= PRIORITY_CHOICES)
 
     def __str__(self) :
