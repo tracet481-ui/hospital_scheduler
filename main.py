@@ -97,6 +97,16 @@ from scheduling.services.cp.scheduler import CPScheduler
 surgeons, rooms, anesthesia_teams, surgeries = load_scheduler_input()
 
 
+def slot_to_time(slot):
+    start_hour = 8
+    total_minutes = start_hour * 60 + slot * 30
+
+    hour = total_minutes // 60
+    minute = total_minutes % 60
+
+    return f"{hour:02d}:{minute:02d}"
+
+
 scheduler = CPScheduler(
     surgeons=surgeons,
     rooms=rooms,
@@ -114,7 +124,14 @@ if result is None:
 
 else:
     for item in sorted(result, key= lambda x: x.start_slot):
-        print (item) 
+        print (
+            f"{item.patient} | "
+            f"{item.operation} | "
+            f"{slot_to_time(item.start_slot)} - {slot_to_time(item.end_slot)} | "
+            f"Oda: {item.room} | "
+            f"Cerrah: {item.surgeon} | "
+            f"Anestezi: {item.anesthesia_team}"
+        ) 
 
 
 
