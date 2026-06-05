@@ -27,7 +27,7 @@ class SurgeryRequest:
     duration: int
     priority: str
     required_specialty: str
-    required_room: Optional[str] = None
+    compatible_rooms: list[str]
 
 
 @dataclass

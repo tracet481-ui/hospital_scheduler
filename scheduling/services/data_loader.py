@@ -47,19 +47,19 @@ def load_scheduler_input():
             request.surgery_type.compatible_rooms.values_list("name", flat=True)
         )
 
-        required_room = None
-
-        if len(compatible_rooms) == 1:
-            required_room = compatible_rooms[0]
+        compatible_rooms = [
+            room.name 
+            for room in request.surgery_type.compatible_rooms.all()
+        ]
 
         surgeries.append(
             AlgoSurgeryRequest(
                 patient=request.patient.code,
-                operation=request.surgery_type.name,
+                operation=request.surgery_type.name,    
                 duration=request.surgery_type.duration_slots,
                 priority=request.get_priority_display(),
                 required_specialty=request.surgery_type.required_specialty.name,
-                required_room=required_room,
+                compatible_rooms = compatible_rooms,
             )
         )
 

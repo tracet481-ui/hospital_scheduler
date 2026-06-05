@@ -85,33 +85,80 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
+# from scheduling.services.data_loader import load_scheduler_input
+# from scheduling.services.backtracking.scheduler import BacktrackingScheduler
+# from scheduling.services.backtracking.utils import format_time_range
+
+
 from scheduling.services.data_loader import load_scheduler_input
-from scheduling.services.backtracking.scheduler import BacktrackingScheduler
-from scheduling.services.backtracking.utils import format_time_range
+from scheduling.services.cp.scheduler import CPScheduler
 
-if __name__ == "__main__":
-    surgeons, rooms, anesthesia_teams, surgeries = load_scheduler_input()
 
-    scheduler = BacktrackingScheduler(
-        surgeons=surgeons,
-        rooms=rooms,
-        anesthesia_teams=anesthesia_teams,
-        surgeries=surgeries,
-        planning_day="Cumartesi",
-    )
+surgeons, rooms, anesthesia_teams, surgeries = load_scheduler_input()
 
-    result = scheduler.generate()
 
-    if result is None:
-        print("Uygun ameliyat planı bulunamadı!")
-    else:
-        print("\nÜretilen ameliyat planı:\n")
+scheduler = CPScheduler(
+    surgeons=surgeons,
+    rooms=rooms,
+    anesthesia_teams=anesthesia_teams,
+    surgeries=surgeries,
 
-        for item in sorted(result, key=lambda item: item.start_slot):
-            print(
-                f"{format_time_range(item.start_slot, item.end_slot)} | "
-                f"{item.room} | "
-                f"{item.patient} - {item.operation} | "
-                f"{item.surgeon} | "
-                f"{item.anesthesia_team}"
-            )
+)
+
+
+result = scheduler.generate()
+
+if result is None:
+    print("CP schedule bulunamadı.")
+
+
+else:
+    for item in sorted(result, key= lambda x: x.start_slot):
+        print (item) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# if __name__ == "__main__":
+#     surgeons, rooms, anesthesia_teams, surgeries = load_scheduler_input()
+
+#     scheduler = BacktrackingScheduler(
+#         surgeons=surgeons,
+#         rooms=rooms,
+#         anesthesia_teams=anesthesia_teams,
+#         surgeries=surgeries,
+#         planning_day="Cumartesi",
+#     )
+
+#     result = scheduler.generate()
+
+#     if result is None:
+#         print("Uygun ameliyat planı bulunamadı!")
+#     else:
+#         print("\nÜretilen ameliyat planı:\n")
+
+#         for item in sorted(result, key=lambda item: item.start_slot):
+#             print(
+#                 f"{format_time_range(item.start_slot, item.end_slot)} | "
+#                 f"{item.room} | "
+#                 f"{item.patient} - {item.operation} | "
+#                 f"{item.surgeon} | "
+#                 f"{item.anesthesia_team}"
+#             )
