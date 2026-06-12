@@ -93,6 +93,13 @@ django.setup()
 from scheduling.services.data_loader import load_scheduler_input
 from scheduling.services.cp.scheduler import CPScheduler
 
+from scheduling.services.schedule_saver import save_schedule_plan
+
+from scheduling.services.scoring import calculate_priority_score
+
+
+
+DAYS =["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", ]
 
 surgeons, rooms, anesthesia_teams, surgeries = load_scheduler_input()
 
@@ -112,26 +119,77 @@ scheduler = CPScheduler(
     rooms=rooms,
     anesthesia_teams=anesthesia_teams,
     surgeries=surgeries,
+    planning_day = "Cuma",
 
 )
 
 
 result = scheduler.generate()
 
+
+
 if result is None:
     print("CP schedule bulunamadı.")
 
 
 else:
-    for item in sorted(result, key= lambda x: x.start_slot):
-        print (
-            f"{item.patient} | "
-            f"{item.operation} | "
+
+    total_score , score_details = calculate_priority_score(
+
+        schedule = result,
+        surgeries = surgeries,
+
+    )
+
+
+
+    plan = save_schedule_plan(
+        
+        schedule = result,
+        algorithm_name = "cp",
+        planning_day = "Cuma",
+        score = total_score,
+
+    )
+
+
+    print (f"Plan DB'ye Kaydedildi. Plan ID : { plan.id }")
+    
+
+
+    for item in sorted (result, key= lambda x: (x.day_index,  x.start_slot) ):
+
+        print(
+
+            f"{DAYS[item.day_index]}   |   "
+            f"{item}"
+
+        ) 
+
+
+    # for item in sorted (
+
+    #     result,
+    #     key= lambda x: x.start_slot
+
+    # ):
+        
+    #     print(item)
+
+
+
+
+    
+    
+    for item in sorted(result, key=lambda x: (x.day_index, x.start_slot)):
+        print(
+            f"{DAYS[item.day_index]} | "
+            f"{item.patient} | {item.operation} | "
             f"{slot_to_time(item.start_slot)} - {slot_to_time(item.end_slot)} | "
             f"Oda: {item.room} | "
             f"Cerrah: {item.surgeon} | "
             f"Anestezi: {item.anesthesia_team}"
-        ) 
+        )
 
 
 

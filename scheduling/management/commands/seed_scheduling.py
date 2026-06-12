@@ -90,6 +90,33 @@ class Command (BaseCommand) :
             ("P5", "Safra Kesesi", 2, "low"),
             ("P6", "Omurga Operasyonu", 5, "high"),
             ("P7", "Menisküs", 2, "medium"),
+
+            ("P8", "Apandisit", 2, "medium"),
+            ("P9", "Safra Kesesi", 2, "high"),
+            ("P10", "Kalp Anjiyo", 3, "critical"),
+            ("P11", "Diz Protezi", 4, "medium"),
+            ("P12", "Menisküs", 2, "low"),
+            ("P13", "Omurga Operasyonu", 5, "high"),
+            ("P14", "Tümör Operasyonu", 6, "critical"),
+
+            ("P15", "Apandisit", 2, "low"),
+            ("P16", "Kalp Anjiyo", 3, "high"),
+            ("P17", "Diz Protezi", 4, "medium"),
+            ("P18", "Safra Kesesi", 2, "medium"),
+            ("P19", "Menisküs", 2, "medium"),
+            ("P20", "Omurga Operasyonu", 5, "critical"),
+            ("P21", "Apandisit", 2, "high"),
+
+            ("P22", "Tümör Operasyonu", 6, "critical"),
+            ("P23", "Kalp Anjiyo", 3, "critical"),
+            ("P24", "Diz Protezi", 4, "low"),
+            ("P25", "Safra Kesesi", 2, "medium"),
+            ("P26", "Menisküs", 2, "high"),
+            ("P27", "Omurga Operasyonu", 5, "high"),
+
+            ("P28", "Apandisit", 2, "critical"),
+            ("P29", "Kalp Anjiyo", 3, "critical"),
+            ("P30", "Tümör Operasyonu", 6, "critical"),
         ]
 
         for patient_code, surgery_name, duration, priority in requests:

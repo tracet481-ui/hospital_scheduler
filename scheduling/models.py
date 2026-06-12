@@ -204,10 +204,16 @@ class ScheduleItem(BaseModel) :
 
     )
 
-    start_slot = models.PositiveIntegerField() 
+    start_slot = models.PositiveIntegerField()
+     
     end_slot =models.PositiveIntegerField()
 
     def __str__(self) :
         return f"{self.surgery_request} | {self.start_slot} - {self.end_slot}"
     
 
+
+
+    day_index = models.PositiveIntegerField(
+        default = 0
+        )

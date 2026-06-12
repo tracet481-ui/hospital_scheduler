@@ -34,8 +34,10 @@ class SurgeryRequest:
 class ScheduleItem:
     patient: str
     operation: str
+    day_index : int 
     start_slot: int
     end_slot: int
     room: str
     surgeon: str
     anesthesia_team: str
+
