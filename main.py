@@ -95,8 +95,9 @@ from scheduling.services.cp.scheduler import CPScheduler
 
 from scheduling.services.schedule_saver import save_schedule_plan
 
-from scheduling.services.scoring import calculate_priority_score
+# from scheduling.services.scoring import calculate_priority_score
 
+from scheduling.services.scoring import calculate_schedule_score
 
 
 DAYS =["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", ]
@@ -134,7 +135,7 @@ if result is None:
 
 else:
 
-    total_score , score_details = calculate_priority_score(
+    total_score , score_details = calculate_schedule_score(
 
         schedule = result,
         surgeries = surgeries,

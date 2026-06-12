@@ -528,15 +528,15 @@ class CPScheduler:
 
 
         DAY_BALANCE_WEIGHT = 300
-        ANESTHESIA_BALANCE_WEIGHT = 120
+        ANESTHESIA_BALANCE_WEIGHT = 50
 
         
 
-        model.Minimize(
-            sum(objective_terms) +
-            day_balance_penalty *
-            DAY_BALANCE_WEIGHT
-        )
+        # model.Minimize(
+        #     sum(objective_terms) +
+        #     day_balance_penalty *
+        #     DAY_BALANCE_WEIGHT
+        # )
 
 
         model.minimize(
@@ -630,7 +630,7 @@ class CPScheduler:
         print("\nDAY LOADS")
         print("===========")
 
-        for day in range(5) :
+        for day_index in range(5):
             print(
                 DAYS[day_index],
                 solver.Value(daily_load_vars[day_index])
@@ -688,24 +688,24 @@ class CPScheduler:
 
 
 
-            if surgery.priority == "Kritik" :
-                contribution = (20 - start_slot ) * 100
+            # if surgery.priority == "Kritik" :
+            #     contribution = (20 - start_slot ) * 100
 
 
-            elif surgery.priority == "Yüksek" :
-                contribution = (20 - start_slot ) * 50
+            # elif surgery.priority == "Yüksek" :
+            #     contribution = (20 - start_slot ) * 50
 
 
             
-            elif surgery.priority == "Orta" :
-                contribution = (20 - start_slot ) * 20
+            # elif surgery.priority == "Orta" :
+            #     contribution = (20 - start_slot ) * 20
 
 
-            else :
-                contribution = (20 - start_slot ) * 5
+            # else :
+            #     contribution = (20 - start_slot ) * 5
 
 
-            total_score += contribution
+            # total_score += contribution
 
 
             print(
@@ -714,7 +714,7 @@ class CPScheduler:
                 f"{ surgery.priority :10}"
                 f"day = { DAYS[day_index] :10} "
                 f"start = { start_slot :2} "
-                f"score =+ { contribution }"
+                # f"score =+ { contribution }"
 
             ) 
 
@@ -741,11 +741,11 @@ class CPScheduler:
             )   
 
 
-        print("\n==================")
-        print ("TOTAL_SCORE = ", total_score)
-        print("==================\n")
+    #     print("\n==================")
+    #     print ("TOTAL_SCORE = ", total_score)
+    #     print("==================\n")
 
-       # totalscorehesaplama kısmı ( scoring te tanımladık burdan işliyoruz) 
+    #    # totalscorehesaplama kısmı ( scoring te tanımladık burdan işliyoruz) 
 
 
         total_score, score_details = calculate_schedule_score(
@@ -770,6 +770,10 @@ class CPScheduler:
         #     )
 
 
+        for detail in score_details:
+            print(detail)
+
+
 
         
         print("==================")
@@ -777,6 +781,6 @@ class CPScheduler:
         print("===================\n")
 
 
-        #solver in sonucunu dto scheduleIteM a çeviriyoeuz
+        # #solver in sonucunu dto scheduleIteM a çeviriyoeuz
 
         return schedule
