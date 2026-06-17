@@ -1,29 +1,28 @@
 from ortools.sat.python import cp_model
 
 from scheduling.services.backtracking.dto import ScheduleItem
-
 from scheduling.services.scoring import calculate_schedule_score
 
 
-
-DAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", ]
+DAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"]
 
 TOTAL_SLOTS = 20
+
+DAY_BALANCE_WEIGHT = 300
+ANESTHESIA_BALANCE_WEIGHT = 50
+SURGEON_IDLE_WEIGHT = 10
 
 
 class CPScheduler:
 
-    def __init__(self, surgeons, rooms, anesthesia_teams, surgeries, planning_day ) :
-
+    def __init__(self, surgeons, rooms, anesthesia_teams, surgeries, planning_day):
         self.surgeons = surgeons
         self.rooms = rooms
         self.anesthesia_teams = anesthesia_teams
         self.surgeries = surgeries
         self.planning_day = planning_day
 
-
-
-    def generate  (self) :
+    def generate(self):
 
         model = cp_model.CpModel()
 
@@ -33,32 +32,25 @@ class CPScheduler:
         anesthesia_vars = {}
         day_vars = {}
 
-
-
+        # -------------------------
+        # Decision Variables
+        # -------------------------
 
         for surgery_index, surgery in enumerate(self.surgeries):
 
             latest_start = TOTAL_SLOTS - surgery.duration
 
-
             day_vars[surgery_index] = model.NewIntVar(
-
-
                 0,
                 4,
                 f"day_{surgery_index}",
-
-
             )
-            
-            
+
             start_vars[surgery_index] = model.NewIntVar(
                 0,
                 latest_start,
                 f"start_{surgery_index}",
             )
-
-
 
             room_vars[surgery_index] = model.NewIntVar(
                 0,
@@ -66,13 +58,11 @@ class CPScheduler:
                 f"room_{surgery_index}",
             )
 
-
             surgeon_vars[surgery_index] = model.NewIntVar(
                 0,
                 len(self.surgeons) - 1,
                 f"surgeon_{surgery_index}",
             )
-
 
             anesthesia_vars[surgery_index] = model.NewIntVar(
                 0,
@@ -80,51 +70,47 @@ class CPScheduler:
                 f"anesthesia_{surgery_index}",
             )
 
+        # -------------------------
+        # Surgeon specialty constraint
+        # -------------------------
 
-        for surgery_index, surgery in enumerate (self.surgeries):
+        for surgery_index, surgery in enumerate(self.surgeries):
 
             compatible_surgeon_indexes = []
 
             for surgeon_index, surgeon in enumerate(self.surgeons):
-                # if surgeon.specialty == surgery.required_specialty:
-                #     compatible_surgeon_indexes.append(surgeon_index)
-                
                 if surgeon.specialty == surgery.required_specialty:
                     compatible_surgeon_indexes.append(surgeon_index)
 
-                    
-
-
             model.AddAllowedAssignments(
                 [surgeon_vars[surgery_index]],
-                [(index,) for index in compatible_surgeon_indexes]
+                [(index,) for index in compatible_surgeon_indexes],
             )
 
+        # -------------------------
+        # Room compatibility constraint
+        # -------------------------
 
+        for surgery_index, surgery in enumerate(self.surgeries):
 
-        for surgery_index, surgery in enumerate(self.surgeries) :
+            compatible_room_indexes = []
 
-            compatible_room_indexes= []
-
-            for room_index, room in enumerate(self.rooms) :
-                
-                if room.name in surgery.compatible_rooms :
+            for room_index, room in enumerate(self.rooms):
+                if room.name in surgery.compatible_rooms:
                     compatible_room_indexes.append(room_index)
 
-
-             
-                
             model.AddAllowedAssignments(
                 [room_vars[surgery_index]],
-                [(index,) for index in compatible_room_indexes]
+                [(index,) for index in compatible_room_indexes],
             )
 
-
-
-
+        # -------------------------
+        # Weekly overlap constraints
+        # -------------------------
 
         for i in range(len(self.surgeries)):
             for j in range(i + 1, len(self.surgeries)):
+
                 surgery_i = self.surgeries[i]
                 surgery_j = self.surgeries[j]
 
@@ -136,29 +122,22 @@ class CPScheduler:
                 i_before_j = model.NewBoolVar(f"i_before_j_{i}_{j}")
                 j_before_i = model.NewBoolVar(f"j_before_i_{i}_{j}")
 
-                # Aynı gün mü?
                 model.Add(day_vars[i] == day_vars[j]).OnlyEnforceIf(same_day)
                 model.Add(day_vars[i] != day_vars[j]).OnlyEnforceIf(same_day.Not())
 
-                # Aynı oda mı?
                 model.Add(room_vars[i] == room_vars[j]).OnlyEnforceIf(same_room)
                 model.Add(room_vars[i] != room_vars[j]).OnlyEnforceIf(same_room.Not())
 
-                # Aynı cerrah mı?
                 model.Add(surgeon_vars[i] == surgeon_vars[j]).OnlyEnforceIf(same_surgeon)
                 model.Add(surgeon_vars[i] != surgeon_vars[j]).OnlyEnforceIf(same_surgeon.Not())
 
-                # Aynı anestezi ekibi mi?
                 model.Add(anesthesia_vars[i] == anesthesia_vars[j]).OnlyEnforceIf(same_anesthesia)
                 model.Add(anesthesia_vars[i] != anesthesia_vars[j]).OnlyEnforceIf(same_anesthesia.Not())
 
                 rest_after_i = 1 if surgery_i.duration >= 4 else 0
                 rest_after_j = 1 if surgery_j.duration >= 4 else 0
 
-                # ---------------------------------------------------------
-                # HAFTALIK ÇAKIŞMA KURALI
-                # ---------------------------------------------------------
-                # Aynı gün + aynı oda ise ameliyatlar çakışamaz.
+                # Same day + same room
                 model.AddBoolOr([
                     i_before_j,
                     j_before_i,
@@ -172,7 +151,7 @@ class CPScheduler:
                     start_vars[j] + surgery_j.duration <= start_vars[i]
                 ).OnlyEnforceIf([same_day, same_room, j_before_i])
 
-                # Aynı gün + aynı anestezi ekibi ise ameliyatlar çakışamaz.
+                # Same day + same anesthesia team
                 model.AddBoolOr([
                     i_before_j,
                     j_before_i,
@@ -186,8 +165,7 @@ class CPScheduler:
                     start_vars[j] + surgery_j.duration <= start_vars[i]
                 ).OnlyEnforceIf([same_day, same_anesthesia, j_before_i])
 
-                # Aynı gün + aynı cerrah ise ameliyatlar çakışamaz.
-                # 4+ slot ameliyattan sonra 1 slot dinlenme eklenir.
+                # Same day + same surgeon + rest rule
                 model.AddBoolOr([
                     i_before_j,
                     j_before_i,
@@ -201,397 +179,312 @@ class CPScheduler:
                     start_vars[j] + surgery_j.duration + rest_after_j <= start_vars[i]
                 ).OnlyEnforceIf([same_day, same_surgeon, j_before_i])
 
-
-
+        # -------------------------
+        # Day balance objective vars
+        # -------------------------
 
         daily_load_vars = []
 
-
-        for day_index in range(5) :
+        for day_index in range(5):
 
             day_usage_terms = []
 
-            for surgery_index, surgery  in enumerate(self.surgeries) :
+            for surgery_index, surgery in enumerate(self.surgeries):
 
                 is_on_day = model.NewBoolVar(
-
                     f"surgery_{surgery_index}_on_day_{day_index}"
-
                 )
 
                 model.Add(
-
-                    day_vars [surgery_index] == day_index
-
+                    day_vars[surgery_index] == day_index
                 ).OnlyEnforceIf(is_on_day)
 
-
                 model.Add(
-
                     day_vars[surgery_index] != day_index
-
                 ).OnlyEnforceIf(is_on_day.Not())
-
 
                 usage = model.NewIntVar(
-
                     0,
                     surgery.duration,
-                    f"usage_s{surgery_index}_d{day_index}"
-
+                    f"usage_s{surgery_index}_d{day_index}",
                 )
 
                 model.Add(
-
                     usage == surgery.duration
-
                 ).OnlyEnforceIf(is_on_day)
 
-
                 model.Add(
-
                     usage == 0
-
                 ).OnlyEnforceIf(is_on_day.Not())
-
 
                 day_usage_terms.append(usage)
 
-
             daily_load = model.NewIntVar(
-
                 0,
                 100,
-                f"daily_load_{day_index}"
-
+                f"daily_load_{day_index}",
             )
-
-
 
             model.Add(
-
                 daily_load == sum(day_usage_terms)
-
             )
-
-
 
             daily_load_vars.append(daily_load)
 
+        max_daily_load = model.NewIntVar(0, 100, "max_daily_load")
+        min_daily_load = model.NewIntVar(0, 100, "min_daily_load")
 
-        max_daily_load = model.NewIntVar(
+        model.AddMaxEquality(max_daily_load, daily_load_vars)
+        model.AddMinEquality(min_daily_load, daily_load_vars)
 
+        day_balance_penalty = model.NewIntVar(
             0,
             100,
-            "max_daily_load"
-
-
+            "day_balance_penalty",
         )
 
+        model.Add(
+            day_balance_penalty == max_daily_load - min_daily_load
+        )
 
-        # anestezi ekibi  yoğunluğu ölçeceğiz
+        # -------------------------
+        # Anesthesia balance objective vars
+        # -------------------------
 
+        anesthesia_load_vars = []
 
-        anesthesia_load_vars= []
-
-        for team_index in range(len(self.anesthesia_teams)) :
-
+        for team_index in range(len(self.anesthesia_teams)):
 
             team_usage_terms = []
-
 
             for surgery_index, surgery in enumerate(self.surgeries):
 
                 assigned_to_team = model.NewBoolVar(
-
                     f"surgery_{surgery_index}_team_{team_index}"
-
                 )
 
-
                 model.Add(
-
                     anesthesia_vars[surgery_index] == team_index
                 ).OnlyEnforceIf(assigned_to_team)
 
-
                 model.Add(
-
                     anesthesia_vars[surgery_index] != team_index
-
                 ).OnlyEnforceIf(assigned_to_team.Not())
 
-
                 usage = model.NewIntVar(
-
                     0,
                     surgery.duration,
-                    f"team_usage_s{surgery_index}_t{team_index}"
+                    f"team_usage_s{surgery_index}_t{team_index}",
                 )
 
-
-
                 model.Add(
-
                     usage == surgery.duration
                 ).OnlyEnforceIf(assigned_to_team)
 
-
                 model.Add(
-
                     usage == 0
                 ).OnlyEnforceIf(assigned_to_team.Not())
 
-
                 team_usage_terms.append(usage)
 
-            
             team_load = model.NewIntVar(
-
                 0,
                 100,
-                f"team_load_{team_index}"
-
-
+                f"team_load_{team_index}",
             )
-
 
             model.Add(
-
                 team_load == sum(team_usage_terms)
-
-
             )
-
-
 
             anesthesia_load_vars.append(team_load)
 
+        max_anesthesia_load = model.NewIntVar(0, 100, "max_anesthesia_load")
+        min_anesthesia_load = model.NewIntVar(0, 100, "min_anesthesia_load")
 
-
-        max_anesthesia_load = model.NewIntVar(
-
-            0,
-            100,
-            "max_anesthesia_load"
-
-
-        )
-
-        min_anesthesia_load  = model.NewIntVar(
-
-            0,
-            100,
-            "min_anesthesia_load"
-
-
-        )
-
-
-        model.AddMaxEquality(
-
-            max_anesthesia_load,
-            anesthesia_load_vars,
-
-
-        )
-
-
-        model.AddMinEquality(
-
-            min_anesthesia_load,
-            anesthesia_load_vars,
-
-
-        )
-
-
+        model.AddMaxEquality(max_anesthesia_load, anesthesia_load_vars)
+        model.AddMinEquality(min_anesthesia_load, anesthesia_load_vars)
 
         anesthesia_balance_penalty = model.NewIntVar(
-
             0,
             100,
-            "anesthesia_balance_penalty"
-
-
+            "anesthesia_balance_penalty",
         )
-
 
         model.Add(
-
-            anesthesia_balance_penalty ==
-            max_anesthesia_load -
-            min_anesthesia_load
-
-
+            anesthesia_balance_penalty
+            == max_anesthesia_load - min_anesthesia_load
         )
 
+        # -------------------------
+        # Surgeon idle objective vars
+        # -------------------------
 
+        surgeon_idle_vars = []
 
+        for surgeon_index, surgeon in enumerate(self.surgeons):
+            for day_index in range(5):
 
+                assigned_list = []
+                usage_terms = []
 
+                for surgery_index, surgery in enumerate(self.surgeries):
 
+                    is_surgeon = model.NewBoolVar(
+                        f"s{surgery_index}_is_surgeon_{surgeon_index}_{day_index}"
+                    )
 
+                    is_day = model.NewBoolVar(
+                        f"s{surgery_index}_is_day_{day_index}_{surgeon_index}"
+                    )
 
-            
+                    assigned = model.NewBoolVar(
+                        f"s{surgery_index}_surgeon_{surgeon_index}_day_{day_index}"
+                    )
 
+                    model.Add(
+                        surgeon_vars[surgery_index] == surgeon_index
+                    ).OnlyEnforceIf(is_surgeon)
 
-        min_daily_load = model.NewIntVar(
+                    model.Add(
+                        surgeon_vars[surgery_index] != surgeon_index
+                    ).OnlyEnforceIf(is_surgeon.Not())
 
-            0,
-            100,
-            "min_daily_load"
+                    model.Add(
+                        day_vars[surgery_index] == day_index
+                    ).OnlyEnforceIf(is_day)
 
-        )
+                    model.Add(
+                        day_vars[surgery_index] != day_index
+                    ).OnlyEnforceIf(is_day.Not())
 
+                    model.AddImplication(assigned, is_surgeon)
+                    model.AddImplication(assigned, is_day)
 
+                    model.AddBoolOr([
+                        is_surgeon.Not(),
+                        is_day.Not(),
+                        assigned,
+                    ])
 
-        model.AddMaxEquality(
+                    usage = model.NewIntVar(
+                        0,
+                        surgery.duration,
+                        f"surgeon_usage_s{surgery_index}_{surgeon_index}_{day_index}",
+                    )
 
-            max_daily_load,
-            daily_load_vars,
+                    model.Add(
+                        usage == surgery.duration
+                    ).OnlyEnforceIf(assigned)
 
+                    model.Add(
+                        usage == 0
+                    ).OnlyEnforceIf(assigned.Not())
 
-        )
+                    assigned_list.append(assigned)
+                    usage_terms.append(usage)
 
+                surgeon_used = model.NewBoolVar(
+                    f"surgeon_{surgeon_index}_used_day_{day_index}"
+                )
 
+                model.AddBoolOr(assigned_list).OnlyEnforceIf(surgeon_used)
 
-        model.AddMinEquality(
+                model.AddBoolAnd(
+                    [assigned.Not() for assigned in assigned_list]
+                ).OnlyEnforceIf(surgeon_used.Not())
 
-            min_daily_load,
-            daily_load_vars,
+                first_start = model.NewIntVar(
+                    0,
+                    TOTAL_SLOTS,
+                    f"first_start_surgeon_{surgeon_index}_day_{day_index}",
+                )
 
+                last_end = model.NewIntVar(
+                    0,
+                    TOTAL_SLOTS,
+                    f"last_end_surgeon_{surgeon_index}_day_{day_index}",
+                )
 
-        )
+                total_work = model.NewIntVar(
+                    0,
+                    TOTAL_SLOTS,
+                    f"total_work_surgeon_{surgeon_index}_day_{day_index}",
+                )
 
+                for surgery_index, surgery in enumerate(self.surgeries):
 
+                    assigned = assigned_list[surgery_index]
 
-        day_balance_penalty =  model.NewIntVar(
+                    model.Add(
+                        first_start <= start_vars[surgery_index]
+                    ).OnlyEnforceIf(assigned)
 
-            0,
-            100,
-            "day_balance_pealty",
+                    model.Add(
+                        last_end >= start_vars[surgery_index] + surgery.duration
+                    ).OnlyEnforceIf(assigned)
 
+                model.Add(
+                    total_work == sum(usage_terms)
+                )
 
-        )
+                idle = model.NewIntVar(
+                    0,
+                    TOTAL_SLOTS,
+                    f"surgeon_idle_{surgeon_index}_{day_index}",
+                )
 
+                model.Add(
+                    idle == last_end - first_start - total_work
+                ).OnlyEnforceIf(surgeon_used)
 
-        model.Add(
+                model.Add(
+                    idle == 0
+                ).OnlyEnforceIf(surgeon_used.Not())
 
-            day_balance_penalty == max_daily_load - min_daily_load
+                surgeon_idle_vars.append(idle)
 
-
-        )
-
-
-
-
-
-
-
-
-
-
-
-
-
+        # -------------------------
+        # Priority objective
+        # -------------------------
 
         objective_terms = []
 
-        for surgery_index, surgery in enumerate(self.surgeries) :
+        for surgery_index, surgery in enumerate(self.surgeries):
 
-            global_start = day_vars[surgery_index] * TOTAL_SLOTS + start_vars[surgery_index]
+            global_start = (
+                day_vars[surgery_index] * TOTAL_SLOTS
+                + start_vars[surgery_index]
+            )
 
             if surgery.priority == "Kritik":
                 weight = 100
-
-
             elif surgery.priority == "Yüksek":
                 weight = 50
-
-
             elif surgery.priority == "Orta":
                 weight = 20
-
-
             else:
                 weight = 5
 
-
             objective_terms.append(global_start * weight)
 
-            
-        
-        # model.Minimize(sum(objective_terms))
-        #  penalty ve weight çarpımı ile toplanır. min sonuç optimal sonuçtur
-
-
-
-        DAY_BALANCE_WEIGHT = 300
-        ANESTHESIA_BALANCE_WEIGHT = 50
-
-        
-
-        # model.Minimize(
-        #     sum(objective_terms) +
-        #     day_balance_penalty *
-        #     DAY_BALANCE_WEIGHT
-        # )
-
-
-        model.minimize(
-
-
-            sum(objective_terms) +
-
-            day_balance_penalty *
-
-            DAY_BALANCE_WEIGHT +
-
-            anesthesia_balance_penalty *
-
-            ANESTHESIA_BALANCE_WEIGHT
-
-
+        model.Minimize(
+            sum(objective_terms)
+            + day_balance_penalty * DAY_BALANCE_WEIGHT
+            + anesthesia_balance_penalty * ANESTHESIA_BALANCE_WEIGHT
+            + sum(surgeon_idle_vars) * SURGEON_IDLE_WEIGHT
         )
 
-
-
-        
-
-        # for surgery_index, surgery in enumerate(self.surgeries) :
-
-        #     for surgeon_index, surgeon in enumerate(self.surgeons)  : 
-
-        #         surgeon_assigned = model.NewBoolVar(
-
-        #             f"surgeon_{surgeon_index}_assigned_to_{surgery_index}"
-        #         )
-
-
-        #         model.Add(surgeon_vars[surgery_index]  ==  surgery_index).OnlyEnforceIf(
-        #                                                                 surgeon_assigned
-        #                                                                 )
-                
-
-        #         model.Add(surgeon_vars[surgery_index]  != surgeon_index ).OnlyEnforceIf(
-        #                                                                 surgeon_assigned.Not()
-        #                                                                 )
-                
-
-        #         off_day_index = DAYS.index(surgeon.off_day)
-
-        #         model.Add(day_vars[surgery_index]  !=  off_day_index).OnlyEnforceIf(
-        #                                                             surgeon_assigned
-        #                                                             )
-
-        
-
+        # -------------------------
+        # Surgeon off-day constraint
+        # -------------------------
 
         for surgery_index, surgery in enumerate(self.surgeries):
+
             allowed_pairs = []
 
             for surgeon_index, surgeon in enumerate(self.surgeons):
+
                 if surgeon.specialty != surgery.required_specialty:
                     continue
 
@@ -601,17 +494,15 @@ class CPScheduler:
 
             model.AddAllowedAssignments(
                 [surgeon_vars[surgery_index], day_vars[surgery_index]],
-                allowed_pairs
+                allowed_pairs,
             )
 
-
-
-        #değişkenler kurulacak
+        # -------------------------
+        # Solve
+        # -------------------------
 
         solver = cp_model.CpSolver()
 
-        # CP-SAT optimizasyonu bazen optimal olduğunu kanıtlamak için uzun süre arar.
-        # Bu yüzden süre limiti koyuyoruz; süre bitince bulduğu en iyi FEASIBLE planı döndürür.
         solver.parameters.max_time_in_seconds = 10
         solver.parameters.num_search_workers = 8
         solver.parameters.log_search_progress = True
@@ -620,12 +511,16 @@ class CPScheduler:
         status = solver.Solve(model)
         print("CP-SAT status:", solver.StatusName(status))
 
-
-        if status not in [cp_model.OPTIMAL, 
-                          cp_model.FEASIBLE] :
+        if status not in [cp_model.OPTIMAL, cp_model.FEASIBLE]:
             return None
 
-
+        print(
+            "Surgeon idle objective:",
+            sum(
+                solver.Value(var)
+                for var in surgeon_idle_vars
+            )
+        )
 
         print("\nDAY LOADS")
         print("===========")
@@ -633,154 +528,81 @@ class CPScheduler:
         for day_index in range(5):
             print(
                 DAYS[day_index],
-                solver.Value(daily_load_vars[day_index])
+                solver.Value(daily_load_vars[day_index]),
             )
-
-        print("Day balance penalty : ", solver.Value(day_balance_penalty))
-
-
-
-        print("\n ANESTHESIA LOADS ")
-        print("====================")
-
-
-        for team_index, team in enumerate(self.anesthesia_teams):
-
-
-            print(
-
-                team.name,
-                solver.Value(
-
-                    anesthesia_load_vars[team_index]
-                )
-            )
-
 
         print(
+            "Day balance penalty:",
+            solver.Value(day_balance_penalty),
+        )
 
-            "Anesthesia penalty : ",
-            solver.Value(
+        print("\nANESTHESIA LOADS")
+        print("====================")
 
-                anesthesia_balance_penalty
+        for team_index, team in enumerate(self.anesthesia_teams):
+            print(
+                team.name,
+                solver.Value(anesthesia_load_vars[team_index]),
             )
 
-
+        print(
+            "Anesthesia penalty:",
+            solver.Value(anesthesia_balance_penalty),
         )
-        
 
-
+        # -------------------------
+        # Convert solver output to DTO
+        # -------------------------
 
         schedule = []
 
-
-        total_score = 0
-
-
-
-        for surgery_index, surgery in enumerate(
-            self.surgeries):
-
+        for surgery_index, surgery in enumerate(self.surgeries):
 
             start_slot = solver.Value(start_vars[surgery_index])
             end_slot = start_slot + surgery.duration
             day_index = solver.Value(day_vars[surgery_index])
 
-
-
-            # if surgery.priority == "Kritik" :
-            #     contribution = (20 - start_slot ) * 100
-
-
-            # elif surgery.priority == "Yüksek" :
-            #     contribution = (20 - start_slot ) * 50
-
-
-            
-            # elif surgery.priority == "Orta" :
-            #     contribution = (20 - start_slot ) * 20
-
-
-            # else :
-            #     contribution = (20 - start_slot ) * 5
-
-
-            # total_score += contribution
-
-
-            print(
-
-                f"{ surgery.operation :20} "
-                f"{ surgery.priority :10}"
-                f"day = { DAYS[day_index] :10} "
-                f"start = { start_slot :2} "
-                # f"score =+ { contribution }"
-
-            ) 
-
-
             room_index = solver.Value(room_vars[surgery_index])
             surgeon_index = solver.Value(surgeon_vars[surgery_index])
             anesthesia_index = solver.Value(anesthesia_vars[surgery_index])
 
-
+            print(
+                f"{surgery.operation:20} "
+                f"{surgery.priority:10} "
+                f"day={DAYS[day_index]:10} "
+                f"start={start_slot:2}"
+            )
 
             schedule.append(
                 ScheduleItem(
-                    patient = surgery.patient,
-                    operation = surgery.operation,
-                    day_index = day_index,
-                    start_slot = start_slot,
-                    end_slot = end_slot,
-                    room = self.rooms[room_index].name,
-                    surgeon = self.surgeons[surgeon_index].name,
-                    anesthesia_team = self.anesthesia_teams[anesthesia_index].name,
-
-
+                    patient=surgery.patient,
+                    operation=surgery.operation,
+                    day_index=day_index,
+                    start_slot=start_slot,
+                    end_slot=end_slot,
+                    room=self.rooms[room_index].name,
+                    surgeon=self.surgeons[surgeon_index].name,
+                    anesthesia_team=self.anesthesia_teams[anesthesia_index].name,
                 )
-            )   
-
-
-    #     print("\n==================")
-    #     print ("TOTAL_SCORE = ", total_score)
-    #     print("==================\n")
-
-    #    # totalscorehesaplama kısmı ( scoring te tanımladık burdan işliyoruz) 
-
+            )
 
         total_score, score_details = calculate_schedule_score(
-                schedule=schedule,
-                surgeries=self.surgeries,
+            schedule=schedule,
+            surgeries=self.surgeries,
         )
 
+        score_summary = next(
+            detail
+            for detail in score_details
+            if detail["type"] == "score_summary"
+        )
 
-        print("\nSCORE DETAILS")
-        print("==============")
+        print("\nSCORE SUMMARY")
+        print("=============")
+        print(score_summary)
 
-        # for detail in score_details : 
-
-        #     print (
-
-        #         f"{ detail['patient']} - "
-        #         f"{ detail['operation'] :20} "
-        #         f"{ detail['priority'] :10} "
-        #         f"start= { detail['start_slot'] :2} "
-        #         f"score=+{detail['score']} "
- 
-        #     )
-
-
-        for detail in score_details:
-            print(detail)
-
-
-
-        
         print("==================")
-        print("TOTAL SCORE: ", total_score) 
+        print("TOTAL SCORE:", total_score)
         print("===================\n")
-
-
-        # #solver in sonucunu dto scheduleIteM a çeviriyoeuz
 
         return schedule

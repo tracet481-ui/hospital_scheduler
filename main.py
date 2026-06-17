@@ -99,6 +99,8 @@ from scheduling.services.schedule_saver import save_schedule_plan
 
 from scheduling.services.scoring import calculate_schedule_score
 
+from scheduling.services.simulation import SimulationEngine
+
 
 DAYS =["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", ]
 
@@ -115,21 +117,48 @@ def slot_to_time(slot):
     return f"{hour:02d}:{minute:02d}"
 
 
-scheduler = CPScheduler(
-    surgeons=surgeons,
-    rooms=rooms,
-    anesthesia_teams=anesthesia_teams,
-    surgeries=surgeries,
-    planning_day = "Cuma",
+#program çıktısı üretme tekli
+
+# scheduler = CPScheduler(
+#     surgeons=surgeons,
+#     rooms=rooms,
+#     anesthesia_teams=anesthesia_teams,
+#     surgeries=surgeries,
+#     planning_day = "Cuma",
+
+# )
+
+
+# result = scheduler.generate()
+# ------------------------------------
+
+
+# birden fazla sonuç üretme
+
+    
+simulation = SimulationEngine(
+
+    surgeons = surgeons,
+    rooms = rooms,
+    anesthesia_teams = anesthesia_teams,
+    surgeries = surgeries,
+    planning_day = "week",
+        
+)
+
+best_schedule, best_score, best_details, all_results = (
+
+    simulation.run ( iterations = 10 ) 
 
 )
 
 
-result = scheduler.generate()
 
 
 
-if result is None:
+
+
+if best_schedule is None:
     print("CP schedule bulunamadı.")
 
 
@@ -137,7 +166,7 @@ else:
 
     total_score , score_details = calculate_schedule_score(
 
-        schedule = result,
+        schedule = best_schedule,
         surgeries = surgeries,
 
     )
@@ -146,7 +175,7 @@ else:
 
     plan = save_schedule_plan(
         
-        schedule = result,
+        schedule = best_schedule,
         algorithm_name = "cp",
         planning_day = "Cuma",
         score = total_score,
@@ -157,8 +186,19 @@ else:
     print (f"Plan DB'ye Kaydedildi. Plan ID : { plan.id }")
     
 
+    print("\nSIMULATION RESULTS")
+    print("==================")
 
-    for item in sorted (result, key= lambda x: (x.day_index,  x.start_slot) ):
+    for result in all_results:
+
+        print(
+            f"Run {result['iteration']} "
+            f"Score = {result['score']}"
+        )
+
+
+
+    for item in sorted (best_schedule, key= lambda x: (x.day_index,  x.start_slot) ):
 
         print(
 
@@ -178,11 +218,8 @@ else:
     #     print(item)
 
 
-
-
     
-    
-    for item in sorted(result, key=lambda x: (x.day_index, x.start_slot)):
+    for item in sorted(best_schedule, key=lambda x: (x.day_index, x.start_slot)):
         print(
             f"{DAYS[item.day_index]} | "
             f"{item.patient} | {item.operation} | "
@@ -191,22 +228,6 @@ else:
             f"Cerrah: {item.surgeon} | "
             f"Anestezi: {item.anesthesia_team}"
         )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
