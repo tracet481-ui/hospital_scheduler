@@ -3,6 +3,8 @@ from ortools.sat.python import cp_model
 from scheduling.services.backtracking.dto import ScheduleItem
 from scheduling.services.scoring import calculate_schedule_score
 
+from scheduling.services.validators import validate_surgeon_rest_rule
+
 
 DAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"]
 
@@ -585,6 +587,38 @@ class CPScheduler:
                     anesthesia_team=self.anesthesia_teams[anesthesia_index].name,
                 )
             )
+        
+
+        print("\nValidator çalıştı.")
+        print("Schedule item count:", len(schedule))
+
+
+        
+
+        ##  doktor 4 slot sonrası dinlenme violation
+
+        rest_violations = validate_surgeon_rest_rule(schedule)
+
+        print("Violation count:", len(rest_violations))
+
+
+
+        if rest_violations:
+
+            print("\nSURGEON REST VİOLATİONS")
+            print("=========================")
+
+
+            for violation in rest_violations: 
+
+                print(violation)
+
+            else:
+
+                print("\n Surgeon rest rule OK ")
+
+
+
 
         total_score, score_details = calculate_schedule_score(
             schedule=schedule,
@@ -606,3 +640,4 @@ class CPScheduler:
         print("===================\n")
 
         return schedule
+    
