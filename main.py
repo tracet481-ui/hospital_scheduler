@@ -344,6 +344,8 @@ from scheduling.services.scoring import calculate_schedule_score
 from scheduling.services.schedule_saver import save_schedule_plan
 from scheduling.services.simulation import SimulationEngine
 
+from scheduling.services.validators import validate_surgeon_rest_rule
+
 
 DAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"]
 
@@ -378,6 +380,21 @@ best_schedule, best_score, best_details, all_results = simulation.run(
 if best_schedule is None:
     print("CP schedule bulunamadı.")
     exit()
+
+
+rest_violations = validate_surgeon_rest_rule(best_schedule)
+
+if rest_violations :
+    print ("\n BEST PLANREST VIOLATION İÇERİYOR! ")
+    print("======================================")
+
+    for violation in rest_violations :
+        print(violation)
+
+    exit()
+
+
+
 
 
 total_score, score_details = calculate_schedule_score(
