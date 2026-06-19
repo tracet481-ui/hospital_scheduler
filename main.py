@@ -372,8 +372,8 @@ simulation = SimulationEngine(
 )
 
 best_schedule, best_score, best_details, all_results = simulation.run(
-    valid_plan_target=10,
-    max_attempts=50,
+    valid_plan_target=5,
+    max_attempts=20,
 )
 
 
@@ -467,3 +467,16 @@ for item in sorted(
         f"{item.surgeon:12} | "
         f"{item.anesthesia_team}"
     )
+
+
+violations = validate_surgeon_rest_rule(best_schedule)
+
+print("\n REST CHECK RESULT")
+print("====================")
+print("Violation Count :", len(violations))
+
+for violation in violations :
+
+    print(violation)
+
+

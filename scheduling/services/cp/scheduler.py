@@ -13,6 +13,7 @@ TOTAL_SLOTS = 20
 DAY_BALANCE_WEIGHT = 300
 ANESTHESIA_BALANCE_WEIGHT = 50
 SURGEON_IDLE_WEIGHT = 10
+MAX_CONTINUOUS_SURGEON_WORK = 4
 
 
 class CPScheduler:
@@ -181,6 +182,140 @@ class CPScheduler:
                     start_vars[j] + surgery_j.duration + rest_after_j <= start_vars[i]
                 ).OnlyEnforceIf([same_day, same_surgeon, j_before_i])
 
+        
+
+        ## ---------------------------------------------------
+
+
+        # -------------------------
+        # Surgeon rest hard constraint
+        # -------------------------
+        ##         # Kural:
+        # Bir cerrah önceki 4 slot boyunca çalıştıysa,
+        # aynı anda yeni ameliyata başlayamaz.
+        #
+        # Örnek:
+        # 08:00-09:00 = 2 slot
+        # 09:00-10:00 = 2 slot
+        # 10:00'da yeni ameliyat başlayamaz.
+        #
+        # Ama 5-6 slotluk tek ameliyat yasaklanmaz.
+        # Çünkü burada "çalışmaya devam etmek" değil,
+        # "yeni ameliyata başlamak" engelleniyor.
+
+        surgeon_work_terms = {}
+        surgeon_start_terms = {}
+
+        for surgeon_index in range(len(self.surgeons)):
+            for day_index in range(5):
+                for slot in range(TOTAL_SLOTS):
+                    surgeon_work_terms[(surgeon_index, day_index, slot)] = []
+                    surgeon_start_terms[(surgeon_index, day_index, slot)] = []
+
+
+        for surgery_index, surgery in enumerate(self.surgeries):
+
+            latest_start = TOTAL_SLOTS - surgery.duration
+
+            for surgeon_index in range(len(self.surgeons)):
+                for day_index in range(5):
+                    for possible_start in range(latest_start + 1):
+
+                        is_surgeon = model.NewBoolVar(
+                            f"rest_s{surgery_index}_surgeon_{surgeon_index}_d{day_index}_t{possible_start}"
+                        )
+
+                        is_day = model.NewBoolVar(
+                            f"rest_s{surgery_index}_day_{day_index}_surgeon_{surgeon_index}_t{possible_start}"
+                        )
+
+                        is_start = model.NewBoolVar(
+                            f"rest_s{surgery_index}_start_{possible_start}_surgeon_{surgeon_index}_d{day_index}"
+                        )
+
+                        assigned_start = model.NewBoolVar(
+                            f"rest_s{surgery_index}_assigned_{surgeon_index}_{day_index}_{possible_start}"
+                        )
+
+                        model.Add(
+                            surgeon_vars[surgery_index] == surgeon_index
+                        ).OnlyEnforceIf(is_surgeon)
+
+                        model.Add(
+                            surgeon_vars[surgery_index] != surgeon_index
+                        ).OnlyEnforceIf(is_surgeon.Not())
+
+                        model.Add(
+                            day_vars[surgery_index] == day_index
+                        ).OnlyEnforceIf(is_day)
+
+                        model.Add(
+                            day_vars[surgery_index] != day_index
+                        ).OnlyEnforceIf(is_day.Not())
+
+                        model.Add(
+                            start_vars[surgery_index] == possible_start
+                        ).OnlyEnforceIf(is_start)
+
+                        model.Add(
+                            start_vars[surgery_index] != possible_start
+                        ).OnlyEnforceIf(is_start.Not())
+
+                        model.AddImplication(assigned_start, is_surgeon)
+                        model.AddImplication(assigned_start, is_day)
+                        model.AddImplication(assigned_start, is_start)
+
+                        model.AddBoolOr([
+                            is_surgeon.Not(),
+                            is_day.Not(),
+                            is_start.Not(),
+                            assigned_start,
+                        ])
+
+                        surgeon_start_terms[
+                            (surgeon_index, day_index, possible_start)
+                        ].append(assigned_start)
+
+                        for work_slot in range(
+                            possible_start,
+                            possible_start + surgery.duration
+                        ):
+                            surgeon_work_terms[
+                                (surgeon_index, day_index, work_slot)
+                            ].append(assigned_start)
+
+
+        for surgeon_index in range(len(self.surgeons)):
+            for day_index in range(5):
+                for slot in range(MAX_CONTINUOUS_SURGEON_WORK, TOTAL_SLOTS):
+
+                    previous_work_terms = []
+
+                    for previous_slot in range(
+                        slot - MAX_CONTINUOUS_SURGEON_WORK,
+                        slot
+                    ):
+                        previous_work_terms.extend(
+                            surgeon_work_terms[
+                                (surgeon_index, day_index, previous_slot)
+                            ]
+                        )
+
+                    current_start_terms = surgeon_start_terms[
+                        (surgeon_index, day_index, slot)
+                    ]
+
+                    model.Add(
+                        sum(previous_work_terms)
+                        + sum(current_start_terms)
+                        <= MAX_CONTINUOUS_SURGEON_WORK
+                    )
+
+
+
+
+
+
         # -------------------------
         # Day balance objective vars
         # -------------------------
@@ -317,6 +452,7 @@ class CPScheduler:
             anesthesia_balance_penalty
             == max_anesthesia_load - min_anesthesia_load
         )
+
 
         # -------------------------
         # Surgeon idle objective vars
