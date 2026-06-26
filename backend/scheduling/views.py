@@ -6,6 +6,12 @@ from rest_framework.response import Response
 
 from rest_framework import status
 
+from rest_framework.authtoken.models import Token
+
+from rest_framework.decorators import api_view
+
+
+
 ##  endpoint i bağlıyoruz
 
 from scheduling.services.data_loader import load_scheduler_input
@@ -20,6 +26,10 @@ from scheduling.services.scoring import calculate_schedule_score
 
 from scheduling.models import SchedulePlan
 
+from django.contrib.auth import authenticate
+
+
+
 
 # Create your views here.
 
@@ -31,6 +41,47 @@ def slot_to_time(slot):
     hour = 8 + (slot // 2 )
     minute = 30 * (slot % 2 )
     return f"{hour:02d} : {minute:02d}"
+
+
+
+@api_view (["POST"])
+
+def login_view (request) :
+    
+    username = request.data.get("username")
+    password = request.data.get("password")
+
+
+    user =authenticate (
+
+        username = username ,
+        password = password,
+
+    )
+
+    if user is None :
+
+        return Response (
+
+            { " error:" "Kullanıcı adı veya şifre hatalı!"},
+
+            status = status.HTTP_400_BAD_REQUEST
+        )
+    
+
+    token, created = Token.objects.get_or_create ( user = user )
+
+
+    return Response ({
+
+        "token" : token.key
+
+    })
+
+
+
+
+
 
 
 class GenerateScheduleView(APIView) : 
@@ -98,50 +149,43 @@ class GenerateScheduleView(APIView) :
 
 
 
-        
+
+        ##-----------------------------------------------------
+
+
 
         weekly_schedule = []
 
         for day_index, day_name in enumerate(DAYS):
 
             day_items = [
-
                 item for item in best_schedule
                 if item.day_index == day_index
-
             ]
 
             day_items = sorted(
-                
-                day_items, key=lambda item: item.start_slot
-                
-                )
+                day_items,
+                key=lambda item: item.start_slot
+            )
 
-            
             weekly_schedule.append({
-
-                "day_index" : day_index,
-                "day_name" : day_name,
-                "items" : [{
-
-                    "patient" : item.patient,
-                    "operation" : item.operation,
-                    "room" : item.room,
-                    "surgeon" : item.surgeon,
-                    "anesthesia_team" : item.anesthesia_team,
-                    "start_slot" : item.start_slot,
-                    "end_slot" : item.end_slot,
-                    "start_time" : slot_to_time(item.start_slot),
-                    "end_time" : slot_to_time (item.end_slot),
-
-                }
-                
-                for item in day_items
-                
+                "day_index": day_index,
+                "day_name": day_name,
+                "items": [
+                    {
+                        "patient": item.patient,
+                        "operation": item.operation,
+                        "room": item.room,
+                        "surgeon": item.surgeon,
+                        "anesthesia_team": item.anesthesia_team,
+                        "start_slot": item.start_slot,
+                        "end_slot": item.end_slot,
+                        "start_time": slot_to_time(item.start_slot),
+                        "end_time": slot_to_time(item.end_slot),
+                    }
+                    for item in day_items
                 ],
-
             })
-
 
 
         plan = save_schedule_plan (

@@ -1,13 +1,14 @@
 from django.urls import path
-from .views import GenerateScheduleView, SchedulePlanListView
+from .views import GenerateScheduleView, SchedulePlanListView, login_view
 
 
 urlpatterns = [
 
 
     ##  api bağlandı
-    path ("generate/", GenerateScheduleView.as_view(), name = "generate-schedule"),
-    path ("", SchedulePlanListView.as_view(), name = "schedule-plan-list"),
+    path("auth/login/", login_view, name="login"),
+    path("schedules/generate/", GenerateScheduleView.as_view()),
+    path("schedules/", SchedulePlanListView.as_view()),
 
 ]
 

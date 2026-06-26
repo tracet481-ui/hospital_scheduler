@@ -39,6 +39,11 @@ const router = createRouter({
               path : "schedule",
               name : "schedule",
               component : ScheduleView,
+              meta : {
+
+                requiresAuth : true,
+
+              }
 
             },
 
@@ -54,17 +59,17 @@ const router = createRouter({
 
 
 
-router.beforeEach((to) => {
+router.beforeEach ((to) => {
 
-  if ( to.meta.requireAuth && !isAuthenticated()) {
+  if ( to.meta.requiresAuth && !isAuthenticated()) {
 
-    return "/login"
+    return  "/login" 
     
   }
 
-  if (to.path === "/login" && isAuthenticated()) {
+  else if (to.path === "/login" && isAuthenticated()) {
 
-    return "/"
+    return "/schedule"
 
   }
 

@@ -40,7 +40,7 @@
             <nav class ="sidebar-nav">
 
                 <RouterLink to ="/">Dashboard</RouterLink>
-                <RouterLink to="/schedule">Plan Oluştur</RouterLink>
+                <RouterLink to ="/schedule">Plan Oluştur</RouterLink>
                 <RouterLink to ="/plans">Plan Listesi</RouterLink>
 
 
@@ -95,8 +95,8 @@
 
 .sidebar {
   width: 270px;
-  background: #003b73;
-  color: white;
+  background: #676e75;
+  color: rgb(6, 0, 0);
   display: flex;
   flex-direction: column;
   padding: 24px 18px;
@@ -140,7 +140,7 @@
 }
 
 .sidebar-nav a {
-  color: white;
+  color: rgb(63, 2, 2);
   text-decoration: none;
   padding: 12px 14px;
   border-radius: 8px;
@@ -170,7 +170,7 @@
 }
 
 .main-header {
-  background: white;
+  background: rgb(255, 255, 255);
   border-bottom: 1px solid #d9e3ee;
   padding: 24px 34px;
 }

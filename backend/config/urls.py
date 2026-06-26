@@ -22,4 +22,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 
     path("api/schedules/", include("scheduling.urls")),
+
+    path("api/", include("scheduling.urls")),
+
 ]
