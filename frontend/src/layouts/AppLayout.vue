@@ -37,16 +37,40 @@
             </div>
 
 
-            <nav class ="sidebar-nav">
+            <!-- <nav class ="sidebar-nav">
 
                 <RouterLink to ="/">Dashboard</RouterLink>
                 <RouterLink to ="/schedule">Plan Oluştur</RouterLink>
                 <RouterLink to ="/plans">Plan Listesi</RouterLink>
 
 
-            </nav>
+            </nav> -->
 
+            <!-- <nav class="navbar">
 
+                <div class="logo">
+                    Hospital Scheduler
+                </div>
+
+                <div class="nav-links">
+                    <RouterLink to="/schedule">
+                        Plan Oluştur
+                    </RouterLink>
+
+                    <RouterLink to="/doctor-schedules">
+                        Doktor Takvimleri
+                    </RouterLink>
+
+                    <RouterLink to="/plans">
+                        Kayıtlı Planlar
+                    </RouterLink>
+                </div>
+
+                <button @click="logout">
+                    Çıkış
+                </button>
+
+            </nav> -->
 
             <button class ="logout-button" @click="handleLogout">
 

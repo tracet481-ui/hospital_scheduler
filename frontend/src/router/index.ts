@@ -3,6 +3,9 @@ import AppLayout  from '../layouts/AppLayout.vue'
 import ScheduleView from '../views/ScheduleView.vue'
 import LoginView  from '../views/LoginView.vue'
 import { isAuthenticated } from "../services/authService"
+import DoctorScheduleView from '@/views/DoctorScheduleView.vue'
+import PlanListView from "../views/PlanListView.vue"
+import PlanDetailView from "../views/PlanDetailView.vue"
 
 
 
@@ -47,6 +50,45 @@ const router = createRouter({
 
             },
 
+
+            {
+
+              path : "/doctor-schedules",
+              name : "doctor-schedules",
+              component : DoctorScheduleView,
+              meta : {
+
+                requiresAuth : true,
+
+              },
+
+            },
+
+
+            {
+
+              path : "/plans",
+              name : "plans",
+              component : PlanListView,
+              meta : {
+
+                requiresAuth : true
+
+              },
+
+            },
+
+            {
+
+              path : "/plans/:id",
+              name : "plan-detail",
+              component : PlanDetailView,
+              meta : {
+                  requiresAuth : true
+              },
+
+            },
+
           ]
 
         }
@@ -78,23 +120,6 @@ router.beforeEach ((to) => {
 
 export default router
 
-
-
-// const routes = [
-
-//   {
-//     path: "/",
-//     name: "schedule",
-//     component: ScheduleView,
-//   },
-//   {
-//     path: "/login",
-//     name: "login",
-//     component: LoginView,
-//   },
-
-
-// ];
 
 
 
