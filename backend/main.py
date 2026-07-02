@@ -403,11 +403,22 @@ total_score, score_details = calculate_schedule_score(
 )
 
 
+
+success_rate = min (
+    100,
+    max(0, int(total_score / 1300))
+)
+
+
+score_details["success_rate"] = success_rate
+
+
 plan = save_schedule_plan(
     schedule=best_schedule,
     algorithm_name="cp",
     planning_day="week",
     score=total_score,
+    score_details=score_details,
 )
 
 

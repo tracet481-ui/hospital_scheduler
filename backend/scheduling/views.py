@@ -278,6 +278,15 @@ class ScheduleDetailView(APIView) :
             "created_at" : plan.created_at,
             "items" : [{
 
+                "priority_score" : plan.priority_score,
+                "day_balance_penalty" : plan.day_balance_penalty,
+                "anesthesia_balance_penalty" : plan.anesthesia_balance_penalty,
+                "room_idle_penalty" : plan.room_idle_penalty,
+                "surgeon_idle_penalty" : plan.surgeon_idle_penalty,
+                "success_rate" : plan.success_rate,
+
+
+
                 "patient" : item.surgery_request.patient.code,
                 "operation" : item.surgery_request.surgery_type.name,
                 "room" : item.room.name,

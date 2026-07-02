@@ -1,6 +1,6 @@
 <script setup>
 
-import { onMounted, ref } from "vue"
+import { computed, onMounted, ref } from "vue"
 import { useRoute } from "vue-router"
 import { getPlanDetail } from "../services/scheduleApi"    
 
@@ -10,6 +10,40 @@ const route = useRoute()
 const plan = ref(null)
 const loading = ref(false)
 const errorMessage = ref ("")
+
+
+const groupedSchedule = computed (() => {
+
+    if (!plan.value?.items)
+
+        return []
+
+    
+        const days = [
+
+            "Pazartesi",
+            "Salı",
+            "Çarşamba",
+            "Perşembe",
+            "Cuma",
+
+        ]
+
+
+        return days.map((day, index)  =>  ({
+
+            dayName : day,
+
+            items : plan.value.items.filter (
+
+                item  =>  item.day_index === index
+
+            )
+
+
+        }))
+
+})
 
 
 const loadPlanDetail = async () => {
@@ -156,6 +190,65 @@ onMounted (loadPlanDetail)
 
         </section>
 
+
+        <section
+                v-for ="day in groupedSchedule"
+                :key = "day.dayName"
+                class ="day-card">
+
+            
+            <h2>
+                {{ day.dayName }}
+            </h2>
+
+            <div
+                v-for ="item in day.items"
+                :key = "'${item.patient} - ${item.start_slot}'"
+                class = "operation-card">
+
+                <div class = "time" >
+
+                    {{ item.start_time }} -
+                    {{ item.end_time }}
+
+                </div>
+
+                <div class = "patient" >
+
+                    {{ item.patient }}
+
+                </div>
+
+                <div class ="operation">
+
+                    {{ item.operation }}
+
+                </div>
+
+                <div>
+
+                    👨‍⚕️ {{ item.surgeon }}
+
+                </div>
+
+
+                <div>
+
+                    🏥 {{ item.room }}
+
+
+                </div>
+
+                <div>
+
+                    💉 {{ item.anesthesia_team }}
+
+                </div>
+
+            </div>
+
+        </section>
+
     </main>
 
 </template>
@@ -219,6 +312,53 @@ onMounted (loadPlanDetail)
 .detail-table th {
     background: #f1f5f9;
     font-weight: 700;
+}
+
+
+.day-card{
+    background:white;
+    padding:20px;
+    border-radius:14px;
+    margin-bottom:30px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.day-card h2{
+    margin-bottom:20px;
+    color:#0f172a;
+    border-bottom:2px solid #e2e8f0;
+    padding-bottom:10px;
+}
+
+.operation-card{
+    background:#f8fafc;
+    padding:16px;
+    border-radius:10px;
+    margin-bottom:12px;
+
+    display:grid;
+    grid-template-columns:
+        120px
+        80px
+        220px
+        170px
+        100px
+        120px;
+
+    align-items:center;
+}
+
+.time{
+    font-weight:bold;
+    color:#2563eb;
+}
+
+.patient{
+    font-weight:bold;
+}
+
+.operation{
+    color:#0f172a;
 }
 
 

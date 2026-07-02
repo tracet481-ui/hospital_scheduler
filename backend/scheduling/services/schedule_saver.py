@@ -16,13 +16,24 @@ def save_schedule_plan (
         algorithm_name,
         planning_day,
         score,
+        score_details = None,
 ) :
+    
+    score_details = score_details or {}
     
     plan = SchedulePlan.objects.create(
         planning_day = planning_day,
         algorithm_name = algorithm_name,
         score = score,
         is_feasible = True,
+
+
+        priority_score = score_details.get("priority_score", 0),
+        day_balance_penalty = score_details.get("day_balance_penalty", 0),
+        anesthesia_balance_penalty = score_details.get("anesthesia_balance_penalty", 0),
+        room_idle_penalty = score_details.get("room_idle_penalty", 0),
+        surgeon_idle_penalty = score_details.get("surgeon_idle_penalty", 0),
+        success_rate = score_details.get("success_rate", 0),
 
     )
 

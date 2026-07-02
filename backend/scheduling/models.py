@@ -149,8 +149,6 @@ class SchedulePlan(BaseModel):
     ALGORITHM_CHOICES = [
         ("backtracking", "Backtacking"),
         ("cp", "Constraint Programming"),
-
-
     ]
 
 
@@ -158,6 +156,14 @@ class SchedulePlan(BaseModel):
     algorithm_name = models.CharField(max_length= 30, choices=ALGORITHM_CHOICES)
     score = models.IntegerField(default=0)
     is_feasible = models.BooleanField(default=True)
+
+
+    priority_score = models.IntegerField(default = 0)
+    day_balance_penalty = models.IntegerField(default = 0)
+    anesthesia_balance_penalty = models.IntegerField(default = 0)
+    room_idle_penalty = models.IntegerField(default = 0)
+    surgeon_idle_penalty = models.IntegerField(default = 0)
+    success_rate = models.IntegerField(default = 0)
 
 
     def __str__(self):
