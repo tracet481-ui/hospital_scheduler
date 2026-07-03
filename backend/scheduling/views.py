@@ -304,3 +304,56 @@ class ScheduleDetailView(APIView) :
             ],
 
         })
+
+ ## son üretilen planın verilerini tabloya yazdırıcaz
+
+class LatestScheduleView(APIView) :
+
+    def get(self, request) :
+
+        plan = SchedulePlan.objects.order_by("-created_at").first()
+
+        if plan is None :
+            return Response (
+
+                {"error":"Kayıtlı plan bulunamadı!"},
+                status = 404,
+
+            )
+        
+
+        items = ScheduleItem.objects.filter(plan = plan).order_by(
+
+            "day_index",
+            "start_slot",
+
+        )
+
+        return Response ({
+
+            "id" : plan.id,
+            "score" : plan.score,
+            "algorithm_name" : plan.algorithm_name,
+            "is_feasible" : plan.is_feasible,
+            "created_at" : plan.created_at,
+            "items" : [{
+
+                "patient" : item.surgery_request.patient.code,
+                "operation" : item. surgery_request.surgery_type.name,
+                "room" : item.room.name,
+                "surgeon" : item.surgeon.name,
+                "anesthesia_team" : item.anesthesia_team.name,
+                "day_index" : item.day_index,
+                "start_slot" : item.start_slot,
+                "end_slot" : item.end_slot,
+                "start_time" : slot_to_time(item.start_slot),
+                "end_time" : slot_to_time (item.end_slot),
+
+
+                }
+            
+            for item in items
+            
+            ],
+
+        })
