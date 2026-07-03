@@ -26,3 +26,12 @@ export const getPlans = () => {
 export const getPlanDetail = (planId: string) => {
     return api.get(`/schedules/${planId}/`)
 }
+
+
+// latest planı front a aktarıcaz
+
+export const getLatestPlan = () => {
+
+    return api.get("/schedules/latest/")
+
+}

@@ -2,6 +2,13 @@
 
     import { computed, ref } from "vue"
 
+    import { onMounted } from "vue"
+
+    import { getLatestPlan } from "../services/scheduleApi"
+
+
+
+
     const selectedDoctor = ref ("Dr. Ahmet")
 
     const selectedDay = ref(15) 
@@ -49,42 +56,10 @@
 
     }
 
-    const appointments = [
+    const appointments = ref([])
 
 
-    {
-        doctor: "Dr. Ahmet",
-        day: 15,
-        time: "08:00",
-        patient: "P12 - Ayşe Yılmaz",
-        operation: "Katarakt Ameliyatı",
-        room: "OR-1",
-        anesthesia: "Team-A",
-        status: "Planlandı",
-    },
-    {
-        doctor: "Dr. Ahmet",
-        day: 15,
-        time: "09:00",
-        patient: "P18 - Mehmet Demir",
-        operation: "Diz Artroskopisi",
-        room: "OR-2",
-        anesthesia: "Team-B",
-        status: "Planlandı",
-    },
-    {
-        doctor: "Dr. Ahmet",
-        day: 15,
-        time: "11:00",
-        patient: "P27 - Fatma Şahin",
-        operation: "Safra Kesesi Ameliyatı",
-        room: "OR-3",
-        anesthesia: "Team-C",
-        status: "Tamamlandı",
-    },
- 
 
-    ]
 
 
     const selectedDayName = computed (()  =>  {
@@ -94,138 +69,138 @@
     })
 
     const selectedAppointments = computed(() => {
-        return appointments.filter(
-            ( item )  => {
-                return item.doctor === selectedDoctor.value &&
-                    item.day === selectedDay.value
-                    })
+        return appointments.value.filter((item) => {
+            return (
+                item.doctor?.trim() === selectedDoctor.value.trim() &&
+                Number(item.day) === Number(selectedDay.value)
+            )
+        })
     })
     
 
+    const normalizeTime = (time) => {
+        if (!time) return ""
+
+        return String(time)
+            .replace(/\s/g, "")
+            .slice(0, 5)
+    }
+
+
+    const timeToMinutes = (time) => {
+
+        const normalized = normalizeTime(time)
+
+        const [hour, minute] = normalized
+            .split(":")
+            .map(Number)
+
+        return hour * 60 + minute
+    }
+
+
 
     const getAppointmentForSlot = (slot) => {
-
-        return selectedAppointments.value.find (
-
-            (item) => item.time === slot
-
-    )}
+        return selectedAppointments.value.find((item) => {
+            return normalizeTime(item.time) === normalizeTime(slot)
+        })
+    }
 
       
 
     const getDayCount = (day) => {
+        return appointments.value.filter((item) => {
+            return (
+                item.doctor?.trim() === selectedDoctor.value.trim() &&
+                Number(item.day) === Number(day)
+            )
+        }).length
+    }
 
-        return appointments.filter (
 
-            (item) => {
-                return item.doctor === selectedDoctor.value &&
-                item.day === day
-                
+
+    const getDayStatus =(day) => {
+
+        if (getDayCount(day) > 0 )
+
+            return "Plan"
+
+    }
+
+
+
+
+
+    const loadLatestPlan = async () => {
+
+        try {
+
+            const response = await getLatestPlan()
+
+            const calendarMapping = {
+                            0: 15,
+                            1: 16,
+                            2: 17,
+                            3: 18,
+                            4: 19,
+                        }
+
+            appointments.value = response.data.items.map((item) => ({
+                doctor: item.surgeon?.trim(),
+                day: calendarMapping[item.day_index],
+                time: normalizeTime(item.start_time),
+                end_time: normalizeTime(item.end_time),
+                patient: item.patient,
+                operation: item.operation,
+                room: item.room,
+                anesthesia: item.anesthesia_team,
+                status: "Planlandı",
+            }))
+
+
+
+                // console.log ("appointments", appointments.value)
+                // console.log ("selectedDoctor", selectedDoctor.value)
+                // console.log ("selectedDay", selectedDay.value)
+                // console.log ("selectedAppointments", selectedAppointments.value)
+
+        }   catch (error) {
+
+            console.log (error)
+
+        }
+    }
+
+    onMounted (
+        () => {
+
+            loadLatestPlan()
             
-            }).length
+        }
+    
+    )
 
-    }
+    const slotRows = computed(() => {
+        return slots.map((slot) => {
+            const slotMinute = timeToMinutes(slot)
 
-    const getDayStatus = (day) => {
+            const appointment = selectedAppointments.value.find((item) => {
+                const start = timeToMinutes(item.time)
+                const end = timeToMinutes(item.end_time)
 
-        if (day < 15)   return "Geçmiş"
-        if (day <= 31)  return "Oluştur"
+                return slotMinute >= start && slotMinute < end
+            })
 
-        return "Pasif"
-
-    }
-
-
-
+            return {
+                slot,
+                appointment,
+                // isBreak: slot === "12:00" || slot === "12:30",
+            }
+        })
+    })
 
 </script>
 
-
-<!-- <template>
-
-    <div class = "container" >
-
-        <aside class = "doctor-panel" >
-
-            <h2>
-                Doktorlar
-            </h2>
-
-            <div
-                v-for = "doctor in doctors"
-                key = "doctor"
-                class = "doctor-card"
-                @click = "selectedDoctor = doctor" >
-            
-            
-                📁   {{ doctor }}
-            
-            </div>
-
-        </aside>
-
-
-        <main class = "calender-panel" >
-
-            <h2>
-                {{ selectedDoctor }}
-            </h2>
-
-
-            <table class = "calender">
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Saat
-                        </th>
-
-                        <th
-                            v-for = "day in days"
-                            key = "day">
-
-                            {{ day }}
-
-                        </th>
-
-                    </tr>
-                    
-                </thead>
-
-
-                <tbody>
-
-                    <tr
-                        v-for = "slot in slots"
-                        key = "slot">
-
-                        <td
-                            class = "time">
-
-                            {{ slot }}
-
-                        </td>
-
-                        <td
-                            v-for = "day in days"
-                            key = "day"
-                            class = "empty">
-
-                        </td>
-
-                    </tr>
-
-                </tbody>
-
-            </table>
-
-        </main>
-
-    </div>
-
-</template> -->
 
 
 <template>
@@ -266,9 +241,10 @@
                 >
                     <span class="day-number">{{ day }}</span>
 
+
                     <button
-                        class="day-button"
-                        :class="getDayStatus(day) === 'Geçmiş' ? 'past' : 'create'"
+                        v-if="getDayStatus(day)"
+                        class="day-button create"
                     >
                         {{ getDayStatus(day) }}
                     </button>
@@ -306,31 +282,28 @@
 
                 <tbody>
                     <tr
-                        v-for="slot in slots"
-                        :key="slot"
+                        v-for="row in slotRows"
+                        :key="row.slot"
                         :class="{
-                            filled: getAppointmentForSlot(slot),
-                            done: getAppointmentForSlot(slot)?.status === 'Tamamlandı',
-                            // breakrow: slot === '12:00' || slot === '12:30'
+                            filled: row.appointment,
+                            done: row.appointment?.status === 'Tamamlandı',
+                            // breakrow: row.isBreak
                         }"
                     >
-                        <td class="time-cell">{{ slot }}</td>
+                        <td class="time-cell">{{ row.slot }}</td>
 
-                        <template v-if="slot === '12:00' || slot === '12:30'">
+                        <!-- <template v-if="row.isBreak">
                             <td colspan="6" class="break-cell">MOLA</td>
-                        </template>
+                        </template> -->
 
-                        <template v-else-if="getAppointmentForSlot(slot)">
-                            <td>{{ getAppointmentForSlot(slot).patient }}</td>
-                            <td>{{ getAppointmentForSlot(slot).operation }}</td>
-                            <td>{{ getAppointmentForSlot(slot).room }}</td>
-                            <td>{{ getAppointmentForSlot(slot).anesthesia }}</td>
+                        <template v-if="row.appointment">
+                            <td>{{ row.appointment.patient }}</td>
+                            <td>{{ row.appointment.operation }}</td>
+                            <td>{{ row.appointment.room }}</td>
+                            <td>{{ row.appointment.anesthesia }}</td>
                             <td>
-                                <span
-                                    class="status-badge"
-                                    :class="getAppointmentForSlot(slot).status === 'Tamamlandı' ? 'success' : 'planned'"
-                                >
-                                    {{ getAppointmentForSlot(slot).status }}
+                                <span class="status-badge planned">
+                                    {{ row.appointment.status }}
                                 </span>
                             </td>
                             <td class="actions">👁 🗑</td>
@@ -345,74 +318,6 @@
         </section>
     </main>
 </template>
-
-
-
-
-<!-- 
-<style>
-
-.container{
-    display:flex;
-    gap:20px;
-    padding:20px;
-}
-
-.doctor-panel{
-    width:250px;
-    background:white;
-    border-radius:12px;
-    padding:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.1);
-}
-
-.doctor-card{
-    padding:15px;
-    margin-bottom:10px;
-    background:#f8fafc;
-    border-radius:10px;
-    cursor:pointer;
-}
-
-.doctor-card:hover{
-    background:#e2e8f0;
-}
-
-.calendar-panel{
-    flex:1;
-    background:white;
-    padding:20px;
-    border-radius:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.1);
-}
-
-.calendar{
-    width:100%;
-    border-collapse:collapse;
-}
-
-.calendar th{
-    background:#f1f5f9;
-    padding:12px;
-}
-
-.calendar td{
-    border:1px solid #e2e8f0;
-    height:40px;
-    text-align:center;
-}
-
-.time{
-    width:80px;
-    font-weight:bold;
-    background:#f8fafc;
-}
-
-.empty{
-    background:white;
-}
-
-</style> -->
 
 
 
