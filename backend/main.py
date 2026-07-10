@@ -491,3 +491,9 @@ for violation in violations :
     print(violation)
 
 
+
+
+
+
+print(best_score)
+print(total_score)

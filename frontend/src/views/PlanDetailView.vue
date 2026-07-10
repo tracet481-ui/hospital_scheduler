@@ -71,6 +71,47 @@ const loadPlanDetail = async () => {
 
 }
 
+//   score görselleştirme   ----------------------------------------------
+
+
+const scorePercent = computed (() => {
+
+    if (! plan.value?.score) return 0
+
+    return Math.min(100, Math.round (plan.value.score / 1300 ))
+
+})
+
+
+//   score görselleştirme   ----------------------------------------------
+
+
+// const scoreCircleStyle = computed (() => {
+
+//     return {
+
+//         background : 'conic-gradient( #2563eb ${scorePercent.value * 3.6} deg, #e5e7eb 0deg)'
+
+//     }
+
+// })
+
+
+//   score görselleştirme   ----------------------------------------------
+
+
+// const scorePercent= computed (() => {
+
+//     if (!plan.value?.score) return 0
+
+//     return Math.min (100, Math.round (plan.value.score / 1300 ))
+
+// })
+
+
+//   score görselleştirme   ---------------------------------------------- 
+
+
 
 onMounted (loadPlanDetail)
 
@@ -118,6 +159,94 @@ onMounted (loadPlanDetail)
                     </strong>
 
                 </div>
+
+                <!-- <div class ="score-section">
+
+                    <div class ="score-circle" :style = "scoreCircleStyle" >
+
+                        <div class = "score-inner" >
+
+                            <strong>
+
+                                {{ scorePercent }}%
+
+                            </strong>
+
+                            <span>
+                                Başarı
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class ="score-info" >
+
+                        <span>
+                            Total Score
+                        </span>
+
+                        <strong>
+                            {{ plan.score }}
+                        </strong>
+
+                    </div>
+
+                </div> -->
+
+
+
+
+                <!-- <p class = "score-label" >
+
+                    Total Score
+
+                </p> -->
+
+        <!-- score görselleştirme --------------------------------- -->
+
+                
+                <div class = "score-card" v-if ="plan" >
+
+                    <div class ="score-header" >
+
+                        <div>
+
+                            <p class = "scrore-title" >
+
+                                Total Score
+
+                            </p>
+
+                            <h2>
+                                {{ plan.score }}
+                            </h2>
+
+                        </div>
+
+                        <strong class ="score-percent">
+
+                            {{ scorePercent }}%
+
+                        </strong>
+
+                    </div>
+
+
+                    <v-progress-linear
+                                    :model-value ="scorePercent"
+                                    color = "blue"
+                                    height ="20"
+                                    rounded
+                                    >
+
+                    </v-progress-linear>
+
+                </div>
+
+        <!-- score görselleştirme ----------------------------- -->
+
 
 
                 <div class = "summary-card" >
@@ -359,6 +488,99 @@ onMounted (loadPlanDetail)
 
 .operation{
     color:#0f172a;
+}
+
+/* 
+.score-section {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin: 24px 0;
+    padding: 24px;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.score-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.score-inner {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.score-inner strong {
+    font-size: 28px;
+    color: #0f172a;
+}
+
+.score-inner span {
+    font-size: 14px;
+    color: #64748b;
+}
+
+.score-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.score-info span {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.score-info strong {
+    font-size: 32px;
+    color: #0f172a;
+}
+ */
+
+
+
+.score-card {
+    background: white;
+    padding: 24px;
+    border-radius: 18px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.score-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.score-title {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.score-header h2 {
+    margin: 4px 0 0;
+    color: #0f172a;
+    font-size: 32px;
+}
+
+.score-percent {
+    font-size: 28px;
+    color: #2563eb;
 }
 
 

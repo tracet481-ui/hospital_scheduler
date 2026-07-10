@@ -1,15 +1,22 @@
-import './assets/main.css';
+import { createApp } from "vue"
+import App from "./App.vue"
+import router from "./router"
 
-import { createApp } from 'vue';
-import App from './App.vue';
+import "vuetify/styles"
+import "@mdi/font/css/materialdesignicons.css"
 
+import { createVuetify } from "vuetify"
+import { VProgressLinear } from "vuetify/components"
 
-import router from './router';
+import "./assets/main.css"
 
+const vuetify = createVuetify({
+    components: {
+        VProgressLinear,
+    },
+})
 
-
-createApp(App) 
+createApp(App)
     .use(router)
-    .mount("#app");
-
-
+    .use(vuetify)
+    .mount("#app")

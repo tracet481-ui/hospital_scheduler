@@ -28,6 +28,17 @@ const goDetail = (id) => {
     router.push(`/plans/${id}`)
 }
 
+const getScorePercent = (score) => {
+
+    if (!score) return 0
+
+    const percent = score / 1300
+
+    return Math.min ( 100, Math.max ( 0, percent ))
+
+}
+
+
 onMounted(loadPlans)
 </script>
 
@@ -47,6 +58,7 @@ onMounted(loadPlans)
                     <tr>
                         <th>Plan ID</th>
                         <th>Skor</th>
+                        <th>Yüzdelik</th>
                         <th>Algoritma</th>
                         <th>Feasible</th>
                         <th>Tarih</th>
@@ -58,6 +70,28 @@ onMounted(loadPlans)
                     <tr v-for="plan in plans" :key="plan.id">
                         <td>{{ plan.id }}</td>
                         <td>{{ plan.score }}</td>
+
+                        <td class = "progress-cell">
+
+                            <div class = "progress-info">
+
+                                <span>
+                                    {{ getScorePercent(plan.score).toFixed(2) }}%
+                                </span>
+
+                                <v-progress-linear
+                                                :model-value = "getScorePercent(plan.score)"
+                                                color = "blue"
+                                                height = "8"
+                                                rounded
+                                                >
+
+                                </v-progress-linear>
+
+                            </div>
+
+                        </td>   
+
                         <td>{{ plan.algorithm_name }}</td>
                         <td>{{ plan.is_feasible ? "Evet" : "Hayır" }}</td>
                         <td>{{ plan.created_at }}</td>
@@ -132,4 +166,26 @@ button {
 .error {
     color: #dc2626;
 }
+
+
+.progress-cell {
+    min-width: 190px;
+}
+
+.progress-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.progress-info span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #15803d;
+}
+
+
+
+
+
 </style>
