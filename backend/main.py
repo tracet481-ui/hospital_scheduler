@@ -376,6 +376,21 @@ best_schedule, best_score, best_details, all_results = simulation.run(
     max_attempts=20,
 )
 
+##    score check
+print("\n Best Plan Selection Check")
+print("============================")
+print (" Best Score: ", best_score)
+print (
+        "Max All Results : ",
+        max(result["score"] for result in all_results)
+        if all_results else None
+)
+
+print ("Best Schedule item count : ", len(best_schedule) if best_schedule else 0)
+
+##    score check
+
+
 
 if best_schedule is None:
     print("CP schedule bulunamadı.")
@@ -403,14 +418,21 @@ total_score, score_details = calculate_schedule_score(
 )
 
 
+print("\nBEST PLAN SCORE CHECK")
+print("=====================")
+print("Simulation Best Score :", best_score)
+print("Recalculated Score    :", total_score)
+print("Difference            :", best_score - total_score)
 
-success_rate = min (
-    100,
-    max(0, int(total_score / 1300))
-)
 
 
-score_details["success_rate"] = success_rate
+# success_rate = min (
+#     100,
+#     max(0, int(total_score / 1300))
+# )
+
+
+# score_details["success_rate"] = success_rate
 
 
 plan = save_schedule_plan(
@@ -422,11 +444,28 @@ plan = save_schedule_plan(
 )
 
 
-print("\nPLAN DB'YE KAYDEDİLDİ")
-print("=====================")
-print(f"Plan ID    : {plan.id}")
-print(f"Best Score : {best_score}")
-print(f"DB Score   : {total_score}")
+
+# ## ----------------------------------------------
+
+
+# print("\nSAVED PLAN CHECK")
+# print("================")
+# print("Saved Plan ID :", plan.id)
+# print("Saved Score   :", plan.score)
+# print("Expected Best :", best_score)
+# print("Item Count    :", len(best_schedule))
+
+# ##  ------------------------------------------------
+
+
+# print("\nPLAN DB'YE KAYDEDİLDİ")
+# print("=====================")
+# print(f"Plan ID    : {plan.id}")
+# print(f"Best Score : {best_score}")
+# print(f"DB Score   : {total_score}")
+
+
+# ##  -------------------------------------------------
 
 
 print("\nSIMULATION RESULTS")
@@ -482,18 +521,25 @@ for item in sorted(
 
 violations = validate_surgeon_rest_rule(best_schedule)
 
-print("\n REST CHECK RESULT")
-print("====================")
-print("Violation Count :", len(violations))
-
-for violation in violations :
-
-    print(violation)
-
-
-
-
-
 
 print(best_score)
 print(total_score)
+
+print("\n REST CHECK RESULT")
+print("====================")
+
+
+## violation kontrolü yazdırma
+
+# print("Violation Count :", len(violations))
+
+# for violation in violations :
+
+#     print(violation)
+
+## violation kontrolü yazdırma
+
+
+
+
+

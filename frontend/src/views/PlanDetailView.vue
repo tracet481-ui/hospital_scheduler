@@ -57,6 +57,11 @@ const loadPlanDetail = async () => {
         const response = await getPlanDetail(route.params.id)
         plan.value = response.data
 
+        console.log ("Plan detail : " , plan.value)
+        console.log (
+            "Simulation results : ",
+            plan.value?.simulation_results)
+
     }   catch   (error) {
 
         console.log(error)
@@ -69,6 +74,14 @@ const loadPlanDetail = async () => {
 
     }
 
+        // plan.value = response.data
+
+        // console.log ("Plan detail : " , plan.value)
+        // console.log (
+        //     "Simulation results : ",
+        //     plan.value?.simulation_results
+        // )
+
 }
 
 //   score görselleştirme   ----------------------------------------------
@@ -76,14 +89,26 @@ const loadPlanDetail = async () => {
 
 const scorePercent = computed (() => {
 
-    if (! plan.value?.score) return 0
+    return Number (plan.value?.success_rate ?? 0) 
 
-    return Math.min(100, Math.round (plan.value.score / 1300 ))
+
+    // if (! plan.value?.score) return 0
+
+    // return Math.min(100, Math.round (plan.value.score / 1300 ))
 
 })
 
+const simulationResults = computed(() => {
+    if (!plan.value) return []
 
-//   score görselleştirme   ----------------------------------------------
+    return Array.isArray(plan.value.simulation_results)
+        ? plan.value.simulation_results
+        : []
+})
+
+
+
+//  ---------------------------------------------- score görselleştirme   
 
 
 // const scoreCircleStyle = computed (() => {
@@ -138,15 +163,7 @@ onMounted (loadPlanDetail)
 
         <section v-if ="plan" class="card" >
 
-            <h2>
-                Skor: {{ plan.score }}
-            </h2>
-
-            <!-- <pre>
-                {{ plan }}
-            </pre> -->
-
-            <div class ="summary-grid" >
+            <!-- <div class ="summary-grid" >
 
                 <div class ="summary-card" >
 
@@ -160,72 +177,19 @@ onMounted (loadPlanDetail)
 
                 </div>
 
-                <!-- <div class ="score-section">
 
-                    <div class ="score-circle" :style = "scoreCircleStyle" >
-
-                        <div class = "score-inner" >
-
-                            <strong>
-
-                                {{ scorePercent }}%
-
-                            </strong>
-
-                            <span>
-                                Başarı
-                            </span>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class ="score-info" >
-
-                        <span>
-                            Total Score
-                        </span>
-
-                        <strong>
-                            {{ plan.score }}
-                        </strong>
-
-                    </div>
-
-                </div> -->
-
-
-
-
-                <!-- <p class = "score-label" >
-
-                    Total Score
-
-                </p> -->
-
-        <!-- score görselleştirme --------------------------------- -->
+     score görselleştirme --------------------------------- -->
 
                 
-                <div class = "score-card" v-if ="plan" >
+                <!-- <div v-if ="plan" class = "score-progress-card" > -->
 
-                    <div class ="score-header" >
+            <!--     <div class ="progress-heading" >
 
-                        <div>
+                        <span>
+                                Plan Başarı Oranı 
+                        </span>
 
-                            <p class = "scrore-title" >
-
-                                Total Score
-
-                            </p>
-
-                            <h2>
-                                {{ plan.score }}
-                            </h2>
-
-                        </div>
-
-                        <strong class ="score-percent">
+                        <strong >
 
                             {{ scorePercent }}%
 
@@ -240,15 +204,19 @@ onMounted (loadPlanDetail)
                                     height ="20"
                                     rounded
                                     >
-
+ 
                     </v-progress-linear>
 
                 </div>
 
-        <!-- score görselleştirme ----------------------------- -->
+        ----------------------------- score görselleştirme  -->
+
+
+        <!--  score görselleştirme ----------------------------- -->
 
 
 
+<!-- 
                 <div class = "summary-card" >
 
                     <span>
@@ -273,7 +241,115 @@ onMounted (loadPlanDetail)
 
                 </div>
 
+
+                <div class="summary-card simulation-card">
+                    <span class="card-label">Simülasyon Skorları</span>
+
+                    <div
+                        v-if="simulationResults.length > 0"
+                        class="simulation-score-list"
+                    >
+                        <div
+                            v-for="result in simulationResults"
+                            :key="result.valid_index"
+                            class="simulation-score-row"
+                            :class="{ best: result.is_best }"
+                        >
+                            <div class="simulation-plan-name">
+                                <span
+                                    v-if="result.is_best"
+                                    class="best-star"
+                                >
+                                    ★
+                                </span>
+
+                                <span v-else class="star-placeholder"></span>
+
+                                <span>
+                                    Plan {{ result.valid_index }}
+                                </span>
+                            </div>
+
+                            <strong>
+                                {{ result.score }}
+                            </strong>
+                        </div>
+                    </div>
+
+                    <span v-else class="empty-result">
+                        Simülasyon sonucu bulunamadı.
+                    </span>
+                </div>
+
+            </div> --> -->
+<!-- 
+----------------------------------------------------- -->
+
+
+        <div class="summary-layout">
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <span class="card-label">Skor</span>
+                    <strong>{{ plan.score }}</strong>
+                </div>
+
+                <div class="summary-card progress-card">
+                    <div class="progress-heading">
+                        <span class="card-label">Plan Başarı Oranı</span>
+                        <strong>{{ scorePercent }}%</strong>
+                    </div>
+
+                    <v-progress-linear
+                        :model-value="scorePercent"
+                        color="blue"
+                        height="14"
+                        rounded
+                    />
+                </div>
+
+                <div class="summary-card">
+                    <span class="card-label">Algoritma</span>
+                    <strong>{{ plan.algorithm_name }}</strong>
+                </div>
+
+                <div class="summary-card">
+                    <span class="card-label">Feasible</span>
+                    <strong>{{ plan.is_feasible ? "Evet" : "Hayır" }}</strong>
+                </div>
             </div>
+
+            <div class="summary-card simulation-card">
+                <span class="card-label">Simülasyon Skorları</span>
+
+                <div
+                    v-if="simulationResults.length"
+                    class="simulation-score-list"
+                >
+                    <div
+                        v-for="result in simulationResults"
+                        :key="`${result.attempt}-${result.valid_index}`"
+                        class="simulation-score-row"
+                        :class="{ best: result.is_best }"
+                    >
+                        <div class="simulation-plan-name">
+                            <span v-if="result.is_best" class="best-star">★</span>
+                            <span v-else class="star-placeholder"></span>
+
+                            <span>Plan {{ result.valid_index }}</span>
+                        </div>
+
+                        <strong>{{ result.score }}</strong>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+
+<!-- 
+            -------------------------------------------- -->
 
 
             <table class ="detail-table" >
@@ -398,20 +474,24 @@ onMounted (loadPlanDetail)
 .error {
     color: #dc2626;
 }
-
+/* 
+-----------------------------------------------
 
 .summary-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 220px 220px 220px 1fr;
     gap: 16px;
     margin-bottom: 24px;
 }
+
+----------------------------------------------- */
 
 .summary-card {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
-    padding: 16px;
+    padding: 8px;
+    
 }
 
 .summary-card span {
@@ -582,6 +662,212 @@ onMounted (loadPlanDetail)
     font-size: 28px;
     color: #2563eb;
 }
+
+
+.score-progress-card {
+    margin-bottom: 24px;
+    padding: 22px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.progress-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.progress-heading span {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.progress-heading strong {
+    color: #2563eb;
+    font-size: 22px;
+}
+/* 
+----------------------------------------
+
+.simulation-card {
+    grid-column: 4;
+    grid-row: 1 / span 2;
+}
+
+----------------------------------------- */
+
+.simulation-section {
+    margin-top: 24px;
+    padding: 24px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    
+}
+
+.simulation-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.simulation-header h2 {
+    margin: 0;
+    color: #0f172a;
+}
+
+.simulation-header p {
+    margin: 6px 0 0;
+    color: #64748b;
+}
+
+.best-score-box {
+    display: flex;
+    flex-direction: column;
+    min-width: 150px;
+    padding: 14px 18px;
+    background: #eff6ff;
+    border-radius: 12px;
+}
+
+.best-score-box span {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.best-score-box strong {
+    color: #2563eb;
+    font-size: 24px;
+}
+
+.simulation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    
+}
+
+.simulation-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+
+.simulation-item.best {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.result-left,
+.result-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.result-left div {
+    display: flex;
+    flex-direction: column;
+}
+
+.result-left small {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.best-marker {
+    color: #f59e0b;
+    font-size: 20px;
+}
+
+.best-label {
+    padding: 4px 8px;
+    color: #1d4ed8;
+    background: #dbeafe;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.result-right strong {
+    color: #0f172a;
+}
+
+
+/* ----------------------------------------------------- */
+
+.summary-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    gap: 16px;
+    align-items: stretch;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.simulation-card {
+    height: 100%;
+    min-width: 0;
+}
+
+.simulation-score-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.simulation-score-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.simulation-score-row.best {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.simulation-plan-name {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.simulation-score-row strong {
+    font-size: 12px;
+}
+
+.best-star {
+    color: #f59e0b;
+}
+
+.star-placeholder {
+    display: inline-block;
+    width: 12px;
+}
+
+
+
+
+/* ----------------------------------------------------- */
 
 
 </style>

@@ -85,23 +85,23 @@ class SimulationEngine:
                 best_schedule = schedule
                 best_details = details
 
-            print(
-                f"Geçerli plan bulundu. "
-                f"Valid {valid_count}/{valid_plan_target} | "
-                f"Score = {score}"
-            )
+            # print(
+            #     f"Geçerli plan bulundu. "
+            #     f"Valid {valid_count}/{valid_plan_target} | "
+            #     f"Score = {score}"
+            # )
 
-        print("\nSIMULATION FINISHED")
-        print("===================")
-        print("Attempts:", attempt)
-        print("Valid plans:", valid_count)
-        print("Best Score:", best_score)
+        # print("\nSIMULATION FINISHED")
+        # print("===================")
+        # print("Attempts:", attempt)
+        # print("Valid plans:", valid_count)
+        # print("Best Score:", best_score)
 
-        if all_results:
-            print(
-                "Max All Results:",
-                max(result["score"] for result in all_results)
-            )
+        # if all_results:
+        #     print(
+        #         "Max All Results:",
+        #         max(result["score"] for result in all_results)
+        #     )
 
         return (
             best_schedule,
@@ -109,3 +109,5 @@ class SimulationEngine:
             best_details,
             all_results,
         )
+    
+        

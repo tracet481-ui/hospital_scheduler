@@ -704,12 +704,18 @@ class CPScheduler:
             surgeon_index = solver.Value(surgeon_vars[surgery_index])
             anesthesia_index = solver.Value(anesthesia_vars[surgery_index])
 
-            print(
-                f"{surgery.operation:20} "
-                f"{surgery.priority:10} "
-                f"day={DAYS[day_index]:10} "
-                f"start={start_slot:2}"
-            )
+
+
+## result ı terminale yazdırma 
+            # print(
+            #     f"{surgery.operation:20} "
+            #     f"{surgery.priority:10} "
+            #     f"day={DAYS[day_index]:10} "
+            #     f"start={start_slot:2}"
+            # )
+
+## result ı terminale yazdırma 
+
 
             schedule.append(
                 ScheduleItem(
@@ -756,24 +762,24 @@ class CPScheduler:
 
 
 
-        total_score, score_details = calculate_schedule_score(
-            schedule=schedule,
-            surgeries=self.surgeries,
-        )
+        # total_score, score_details = calculate_schedule_score(
+        #     schedule=schedule,
+        #     surgeries=self.surgeries,
+        # )
 
-        score_summary = next(
-            detail
-            for detail in score_details
-            if detail["type"] == "score_summary"
-        )
+        # score_summary = next(
+        #     detail
+        #     for detail in score_details
+        #     if detail["type"] == "score_summary"
+        # )
 
-        print("\nSCORE SUMMARY")
-        print("=============")
-        print(score_summary)
+        # print("\nSCORE SUMMARY")
+        # print("=============")
+        # print(score_summary)
 
-        print("==================")
-        print("TOTAL SCORE:", total_score)
-        print("===================\n")
+        # print("==================")
+        # print("TOTAL SCORE:", total_score)
+        # print("===================\n")
 
         return schedule
     

@@ -51,7 +51,7 @@ def slot_to_time(slot):
 @api_view (["POST"])
 
 def login_view (request) :
-    
+
     username = request.data.get("username")
     password = request.data.get("password")
 
@@ -71,7 +71,7 @@ def login_view (request) :
 
             status = status.HTTP_400_BAD_REQUEST
         )
-    
+
 
     token, created = Token.objects.get_or_create ( user = user )
 
@@ -88,7 +88,7 @@ def login_view (request) :
 
 
 
-class GenerateScheduleView(APIView) : 
+class GenerateScheduleView(APIView) :
 
     def post(self, reequest) :
 
@@ -105,7 +105,70 @@ class GenerateScheduleView(APIView) :
         )
 
 
-        best_schedule, best_score, best_details, all_results = simulation.run ()
+        # best_schedule, best_score, best_details, all_results = simulation.run ()
+
+
+        best_schedule, best_score, best_details, all_results = simulation.run()
+
+
+            ##   detail sayfasında son plan kayıtlarını göster --------
+
+        simulation_results = [
+
+            {
+
+                "attempt" : result ["attempt"],
+                "valid_index" : result ["valid_index"],
+                "score" : result ["score"] ,
+                "is_best" : result ["score"] == best_score ,
+
+            }
+                for result in all_results
+
+        ]
+
+        score_summary = next (
+
+            detail
+            for detail in best_details
+            if detail["type"] == "score_summary"
+
+        )
+
+
+        success_rate = min (
+
+            100,
+            max (   0, int (best_score/1300)),
+            
+        )
+
+        score_summary ["success_rate"] = success_rate
+
+
+
+    ## ---------- detail sayfasında son plan kayıtlarını göster 
+        
+        ##  score check ----------------------------
+
+
+        print("\nBEST PLAN SELECTION CHECK")
+        print("=========================")
+        print("Best Score           :", best_score)
+        print(
+            "Max All Results      :",
+            max(result["score"] for result in all_results)
+            if all_results else None
+        )
+        print(
+            "Best Schedule Count  :",
+            len(best_schedule) if best_schedule else 0
+        )
+
+        
+        
+        ## ----------------------------  score check 
+
 
 
         if best_schedule is None :
@@ -116,9 +179,9 @@ class GenerateScheduleView(APIView) :
                 status = status.HTTP_400_BAD_REQUEST,
 
             )
-        
 
-        ## violations denetimi 
+
+        ## violations denetimi
 
         rest_violations =  validate_surgeon_rest_rule(best_schedule)
 
@@ -133,13 +196,28 @@ class GenerateScheduleView(APIView) :
                 },
                 status = status.HTTP_400_BAD_REQUEST,
             )
-        
+
         total_score, score_details = calculate_schedule_score(
 
             schedule = best_schedule,
             surgeries = surgeries,
 
         )
+
+        ##  score check ----------------------------
+
+        print("\nBEST PLAN SCORE CHECK")
+        print("=====================")
+        print("Simulation Best Score :", best_score)
+        print("Recalculated Score     :", total_score)
+        print("Difference             :", best_score - total_score)
+
+        
+        ##  score check ----------------------------
+
+
+
+
 
 
         score_summary = next (
@@ -151,10 +229,21 @@ class GenerateScheduleView(APIView) :
         )
 
 
+        success_rate = min (
+
+            100,
+            max(0, int(total_score / 1300)),
+
+        )
+
+        score_summary["success_rate"] = success_rate
 
 
 
-        ##-----------------------------------------------------
+
+
+        ## ----------------------------  score check 
+
 
 
 
@@ -198,7 +287,35 @@ class GenerateScheduleView(APIView) :
                 algorithm_name = "cp",
                 planning_day = "Haftalık Plan",
                 score = total_score,
+                score_details = score_summary,
+                simulation_results = simulation_results,
+                # success_rate = score_details.get("success_rate",0),
         )
+
+
+        print("\nSUCCESS RATE CHECK")
+        print("==================")
+        print("Calculated Success Rate :", success_rate)
+        print("Summary Success Rate    :", score_summary.get("success_rate"))
+        print("Saved Success Rate      :", plan.success_rate)
+
+
+
+
+        
+        ##  score check ----------------------------
+        
+        print("\nSAVED PLAN CHECK")
+        print("================")
+        print("Saved Plan ID :", plan.id)
+        print("Saved Score   :", plan.score)
+        print("Expected Best :", best_score)
+        print("Item Count    :", len(best_schedule))
+
+
+
+
+        ## ---------------------------- score check 
 
 
 
@@ -216,44 +333,51 @@ class GenerateScheduleView(APIView) :
             },
                 status = status.HTTP_201_CREATED,
         )
-    
 
 
 
 
-        return Response ({
 
-            "message" : "Schedule generate endpoint çalışıyor"
+        # return Response ({
+
+        #     "message" : "Schedule generate endpoint çalışıyor"
 
 
 
 
-        })
-    
+        # })
 
-class SchedulePlanListView(APIView) : 
-        
-    def get(self, request) : 
-             
+
+
+
+
+
+
+
+
+class SchedulePlanListView(APIView) :
+
+    def get(self, request) :
+
         plans = SchedulePlan.objects.all().order_by("-created_at")
 
         data = []
 
         for plan in plans:
-                
+
             data.append  ({
-                  
+
                   "id" : str(plan.id),
                   "planning_day" : plan.planning_day,
                   "algorithm_name" : plan.algorithm_name,
                   "score" : plan.score,
                   "is_feasible" : plan.is_feasible,
-                  "created_at" : plan.created_at, 
+                  "created_at" : plan.created_at,
 
              })
 
         return Response(data)
-    
+
 
 
 class ScheduleDetailView(APIView) :
@@ -276,14 +400,25 @@ class ScheduleDetailView(APIView) :
             "algorithm_name" : plan.algorithm_name,
             "is_feasible" : plan.is_feasible,
             "created_at" : plan.created_at,
+
+            "simulation_results" : plan.simulation_results ,
+
+            "priority_score" : plan.priority_score,
+            "day_balance_penalty" : plan.day_balance_penalty,
+            "anesthesia_balance_penalty" : plan.anesthesia_balance_penalty,
+            "room_idle_penalty" : plan.room_idle_penalty,
+            "surgeon_idle_penalty" : plan.surgeon_idle_penalty,
+            "success_rate" : plan.success_rate,
+
+
             "items" : [{
 
-                "priority_score" : plan.priority_score,
-                "day_balance_penalty" : plan.day_balance_penalty,
-                "anesthesia_balance_penalty" : plan.anesthesia_balance_penalty,
-                "room_idle_penalty" : plan.room_idle_penalty,
-                "surgeon_idle_penalty" : plan.surgeon_idle_penalty,
-                "success_rate" : plan.success_rate,
+                # "priority_score" : plan.priority_score,
+                # "day_balance_penalty" : plan.day_balance_penalty,
+                # "anesthesia_balance_penalty" : plan.anesthesia_balance_penalty,
+                # "room_idle_penalty" : plan.room_idle_penalty,
+                # "surgeon_idle_penalty" : plan.surgeon_idle_penalty,
+                # "success_rate" : plan.success_rate,
 
 
 
@@ -300,7 +435,7 @@ class ScheduleDetailView(APIView) :
 
             }
                 for item in items
-            
+
             ],
 
         })
@@ -320,7 +455,7 @@ class LatestScheduleView(APIView) :
                 status = 404,
 
             )
-        
+
 
         items = ScheduleItem.objects.filter(plan = plan).order_by(
 
@@ -351,9 +486,9 @@ class LatestScheduleView(APIView) :
 
 
                 }
-            
+
             for item in items
-            
+
             ],
 
         })

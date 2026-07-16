@@ -151,6 +151,18 @@ class SchedulePlan(BaseModel):
         ("cp", "Constraint Programming"),
     ]
 
+    ## score sayfası --------
+    id = models.UUIDField(
+
+        primary_key = True,
+        default = uuid.uuid4,
+        editable = False,
+
+    )
+
+    
+    ## --------   score sayfası 
+
 
     planning_day = models.CharField(max_length=20)
     algorithm_name = models.CharField(max_length= 30, choices=ALGORITHM_CHOICES)
@@ -166,9 +178,44 @@ class SchedulePlan(BaseModel):
     success_rate = models.IntegerField(default = 0)
 
 
+        ##   detail sayfasında son plan kayıtlarını göster 
+
+
+    simulation_results = models.JSONField(
+
+    default = list ,
+    blank = True,
+    )
+
     def __str__(self):
         return f"{self.algorithm_name} - {self.planning_day} - {self.score} "
     
+
+
+
+
+
+
+    # simulation_results = [
+    #     {
+
+    #         "attempt" : result["attempt"],
+    #         "valid_index" : result["valid_index"],
+    #         "score" : result["score"],
+    #         "is_best" : result ["score"] == best_score,
+
+    #     }
+
+    #     for result  in all_results
+    # ]
+
+    ##   detail sayfasında son plan kayıtlarını göster 
+
+
+
+
+
+
 
 
 class ScheduleItem(BaseModel) :
