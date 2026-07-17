@@ -35,3 +35,42 @@ export const getLatestPlan = () => {
     return api.get("/schedules/latest/")
 
 }
+
+    // operasyon ekleme ----------------------------------
+
+// export const getSurgeryTypes = () => {
+
+//     return api.get ("/surgery-types/")
+
+// }
+
+
+// export const createSurgeryType = (data) => {
+
+//     return api.post("/surgery-types/", data)
+
+// }
+
+
+
+export const getPatients = () =>  {
+
+    return api.get("/patients/")
+
+}
+
+
+export const getSurgeryTypes = () => {
+
+    return api.get("/surgery-types/")
+
+}
+
+export const createSurgeryRequest = (data: any) => {
+
+    return api.post("/surgery-requests", data) 
+
+}
+
+
+    // ----------------------------------  operasyon ekleme 
