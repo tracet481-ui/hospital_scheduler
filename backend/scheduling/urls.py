@@ -6,6 +6,9 @@ from .views import (
                 ScheduleDetailView,
                 login_view,
                 LatestScheduleView,
+                SurgeryRequestListCreateView,
+                PatientListView,
+                SurgeryTypeListView,
                 )
 
 
@@ -19,5 +22,28 @@ urlpatterns = [
     path("schedules/latest/", LatestScheduleView.as_view(), name = "schedule-latest"),
     path("schedules/<uuid:plan_id>/", ScheduleDetailView.as_view(), name="schedule-detail"),
 
+##  operasyon ekleme   ------------------------
+    path("surgery-requests/", SurgeryRequestListCreateView.as_view(), name="surgery-request-list-create",),
+
+
 ]
+
+
+path(
+    "surgery-requests/",
+    SurgeryRequestListCreateView.as_view(),
+    name="surgery-request-list-create",
+),
+
+path(
+    "patients/",
+    PatientListView.as_view(),
+    name="patient-list",
+),
+
+path(
+    "surgery-types/",
+    SurgeryTypeListView.as_view(),
+    name="surgery-type-list",
+),
 

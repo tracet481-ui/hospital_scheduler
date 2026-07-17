@@ -10,6 +10,10 @@ from rest_framework.authtoken.models import Token
 
 from rest_framework.decorators import api_view
 
+from rest_framework.generics import (
+                         ListCreateAPIView,
+                         ListAPIView, )
+
 
 
 ##  endpoint i bağlıyoruz
@@ -27,10 +31,21 @@ from scheduling.services.scoring import calculate_schedule_score
 from .models import (
     SchedulePlan,
     ScheduleItem,
+    SurgeryRequest,
+    Patient,
+    SurgeryType,
 )
 
 
 from django.contrib.auth import authenticate
+
+from .serializer import (
+                        # SchedulePlanListSerializer,
+                        # SchedulePlanDetailSerializer,
+                        SurgeryRequestSerializer,
+                        PatientSerializer,
+                        SurgeryTypeSerializer, 
+                        )       
 
 
 
@@ -492,3 +507,97 @@ class LatestScheduleView(APIView) :
             ],
 
         })
+    
+
+##  operasyon ekleme    ------------------------------------
+
+
+# class SurgeryTypeListCreateView (ListCreateAPIView) :
+
+#     queryset = SurgeryType.objects.all().order_by("name")
+
+#     serializer_class = SurgeryTypeSerializer
+
+
+class SurgeryRequestListCreateView (ListCreateAPIView) :
+
+    queryset = (
+
+        SurgeryRequest.objects
+        .select_related(
+
+            "patient",
+            "surgery_type",
+            "surgery_type__required_specialty",
+
+        )
+        .order_by ("-created_at")
+
+    )
+
+    serializer_class = SurgeryRequestSerializer
+
+
+## Hasta listesi --------------------------
+
+class PatientlistView (ListAPIView) :
+
+    queryset = Patient.objects.order_by ("code")
+    serializer_class = PatientSerializer
+
+
+
+## -------------------------- Hasta listesi 
+
+
+
+##  operasyon tipleri  --------------------------------
+
+class SurgeryTypeListView(ListAPIView) :
+
+    queryset = (
+
+        SurgeryType.objects
+        .select_related("required_specialty")
+        .order_by("name")
+
+    )
+
+    serializer_class = SurgeryTypeSerializer
+
+
+##  -------------------------------- operasyon tipleri  
+
+
+
+
+## ------------------------------------  operasyon ekleme    
+
+
+class SurgeryRequestListCreateView(ListCreateAPIView):
+    queryset = (
+        SurgeryRequest.objects
+        .select_related(
+            "patient",
+            "surgery_type",
+            "surgery_type__required_specialty",
+        )
+        .order_by("-created_at")
+    )
+
+    serializer_class = SurgeryRequestSerializer
+
+
+class PatientListView(ListAPIView):
+    queryset = Patient.objects.order_by("code")
+    serializer_class = PatientSerializer
+
+
+class SurgeryTypeListView(ListAPIView):
+    queryset = (
+        SurgeryType.objects
+        .select_related("required_specialty")
+        .order_by("name")
+    )
+
+    serializer_class = SurgeryTypeSerializer
