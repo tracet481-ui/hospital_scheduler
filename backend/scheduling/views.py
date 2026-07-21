@@ -542,7 +542,7 @@ class SurgeryRequestListCreateView (ListCreateAPIView) :
 
 class PatientlistView (ListAPIView) :
 
-    queryset = Patient.objects.order_by ("code")
+    queryset = Patient.objects.all().order_by ("code")
     serializer_class = PatientSerializer
 
 
@@ -557,8 +557,7 @@ class SurgeryTypeListView(ListAPIView) :
 
     queryset = (
 
-        SurgeryType.objects
-        .select_related("required_specialty")
+        SurgeryType.objects.all()
         .order_by("name")
 
     )

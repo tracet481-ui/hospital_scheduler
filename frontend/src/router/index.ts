@@ -6,6 +6,8 @@ import { isAuthenticated } from "../services/authService"
 import DoctorScheduleView from '@/views/DoctorScheduleView.vue'
 import PlanListView from "../views/PlanListView.vue"
 import PlanDetailView from "../views/PlanDetailView.vue"
+import OperationManagementView from "../views/OperationManagementView.vue"
+import SurgeryRequestCreateView from '../views/SurgeryRequestCreateView.vue'
 
 
 
@@ -89,7 +91,25 @@ const router = createRouter({
 
             },
 
-          ]
+
+            {
+
+              path : "/operations",
+              name : "operations",
+              component : OperationManagementView,
+
+            },
+
+
+            {
+
+              path : "/operations/new",
+              name : "operation-create",
+              component : SurgeryRequestCreateView,
+
+            },
+
+          ],
 
         }
 

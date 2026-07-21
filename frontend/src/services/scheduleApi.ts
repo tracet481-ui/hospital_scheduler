@@ -38,39 +38,93 @@ export const getLatestPlan = () => {
 
     // operasyon ekleme ----------------------------------
 
-// export const getSurgeryTypes = () => {
-
-//     return api.get ("/surgery-types/")
-
-// }
-
-
-// export const createSurgeryType = (data) => {
-
-//     return api.post("/surgery-types/", data)
-
-// }
 
 
 
 export const getPatients = () =>  {
 
-    return api.get("/patients/")
+    return api.get<PatientOption[]>("/patients/")
 
 }
 
 
 export const getSurgeryTypes = () => {
 
-    return api.get("/surgery-types/")
+    return api.get<SurgeryTypeOption[]>("/surgery-types/")
 
 }
 
-export const createSurgeryRequest = (data: any) => {
 
-    return api.post("/surgery-requests", data) 
+export const getSurgeryRequest = () => {
+
+    return api.get<SurgeryRequestResponse[]>("/surgery-requests/")
+
+}
+
+
+export const createSurgeryRequest = (data: SurgeryRequestPayload) => {
+
+    return api.post<SurgeryRequestResponse>("/surgery-requests/",data,)
 
 }
 
 
     // ----------------------------------  operasyon ekleme 
+    // operasyon ekleme ----------------------------------   
+
+
+export interface PatientOption {
+
+    id : string
+    code : string
+
+}
+
+
+export interface SurgeryTypeOption {
+
+    id : string
+    name : string
+    duration_slots : number
+    specialty_name : string
+
+}
+
+
+export type SurgeryPriority = 
+
+    |   "critical"
+    |   "high"
+    |   "medium"
+    |   "low"
+
+
+export interface SurgeryRequestPayload {
+
+    patient : string
+    surgery_type : string
+    priority : SurgeryPriority 
+
+}
+
+
+export interface SurgeryRequestResponse {
+
+    id : string
+
+    patient : string
+    patient_name : string
+
+    surgery_type : string
+    surgery_name : string
+
+    priority : string
+
+}
+
+
+    // ----------------------------------  operasyon ekleme 
+
+
+
+

@@ -1,4 +1,5 @@
 from django.urls import path
+
 from .views import ( 
                 GenerateScheduleView, 
                 SchedulePlanListView, 
@@ -6,9 +7,9 @@ from .views import (
                 ScheduleDetailView,
                 login_view,
                 LatestScheduleView,
-                SurgeryRequestListCreateView,
                 PatientListView,
                 SurgeryTypeListView,
+                SurgeryRequestListCreateView,
                 )
 
 
@@ -26,14 +27,6 @@ urlpatterns = [
     path("surgery-requests/", SurgeryRequestListCreateView.as_view(), name="surgery-request-list-create",),
 
 
-]
-
-
-path(
-    "surgery-requests/",
-    SurgeryRequestListCreateView.as_view(),
-    name="surgery-request-list-create",
-),
 
 path(
     "patients/",
@@ -46,4 +39,17 @@ path(
     SurgeryTypeListView.as_view(),
     name="surgery-type-list",
 ),
+
+
+path(
+    "surgery-requests/",
+    SurgeryRequestListCreateView.as_view(),
+    name="surgery-request-list-create",
+),
+
+
+
+]
+
+
 

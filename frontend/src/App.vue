@@ -31,6 +31,8 @@ body,
 
     <RouterLink to ="/plans">Kayıtlı Planlar</RouterLink>
 
+    <RouterLink to="/operations">Operasyon Yönetimi</RouterLink>
+
   </nav>
 
   <RouterView />
