@@ -120,13 +120,44 @@ class GenerateScheduleView(APIView) :
         )
 
 
-        # best_schedule, best_score, best_details, all_results = simulation.run ()
-
 
         best_schedule, best_score, best_details, all_results = simulation.run()
 
 
-            ##   detail sayfasında son plan kayıtlarını göster --------
+        ##   detail sayfasında son plan kayıtlarını göster --------
+
+        if best_schedule is None :
+
+            return Response (
+
+                {
+                "error" : "Geçerli schedule bulunamadı!",
+                },
+
+                status = status.HTTP_400_BAD_REQUEST,
+
+            )
+        
+
+        if best_details is None : 
+
+            return Response ({
+
+                "error" : "Plan bulundu ancak skor hesaplanamadı !",
+
+            },
+
+            status = status.HTTP_500_INTERNAL_SERVER_ERROR,
+            
+            )
+
+
+        
+        if all_results is None: 
+
+            all_results = []
+
+
 
         simulation_results = [
 
@@ -142,19 +173,63 @@ class GenerateScheduleView(APIView) :
 
         ]
 
+
+        rest_violations = validate_surgeon_rest_rule(best_schedule)
+
+        if rest_violations : 
+
+            return Response (
+
+                {
+                    "error" : "Best plan rest violation içeriyor!",
+                    "violations" : rest_violations,
+                },
+
+                status= status.HTTP_400_BAD_REQUEST,
+
+            )
+        
+
+        total_score, score_details = calculate_schedule_score (
+
+            schedule = best_schedule,
+            surgeries= surgeries,
+
+        )
+
+
+
         score_summary = next (
+            (
 
             detail
             for detail in best_details
-            if detail["type"] == "score_summary"
+            if detail.get("type") == "score_summary"
+
+            ),
+
+            None,
 
         )
+
+        if score_summary is None :
+
+            return Response (
+                {
+
+                    "error" : "Yeniden hesaplanan skor özeti bulunamadı!",
+                    "score_details" : score_details,
+
+                },
+
+                status = status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
         success_rate = min (
 
             100,
-            max (   0, int (best_score/1300)),
+            max (0, int (best_score/1300)),
             
         )
 
@@ -186,38 +261,38 @@ class GenerateScheduleView(APIView) :
 
 
 
-        if best_schedule is None :
+        # if best_schedule is None :
 
-            return Response (
+        #     return Response (
 
-                {"Error" : "Geçerli schedule bulunamadı!"},
-                status = status.HTTP_400_BAD_REQUEST,
+        #         {"Error" : "Geçerli schedule bulunamadı!"},
+        #         status = status.HTTP_400_BAD_REQUEST,
 
-            )
+        #     )
 
 
         ## violations denetimi
 
-        rest_violations =  validate_surgeon_rest_rule(best_schedule)
+        # rest_violations =  validate_surgeon_rest_rule(best_schedule)
 
 
-        if rest_violations :
+        # if rest_violations :
 
-            return Response ({
+        #     return Response ({
 
-                "error" : "Best plan rest violation içeriyor!",
-                "violations" : rest_violations,
+        #         "error" : "Best plan rest violation içeriyor!",
+        #         "violations" : rest_violations,
 
-                },
-                status = status.HTTP_400_BAD_REQUEST,
-            )
+        #         },
+        #         status = status.HTTP_400_BAD_REQUEST,
+        #     )
 
-        total_score, score_details = calculate_schedule_score(
+        # total_score, score_details = calculate_schedule_score(
 
-            schedule = best_schedule,
-            surgeries = surgeries,
+        #     schedule = best_schedule,
+        #     surgeries = surgeries,
 
-        )
+        # )
 
         ##  score check ----------------------------
 
@@ -235,23 +310,23 @@ class GenerateScheduleView(APIView) :
 
 
 
-        score_summary = next (
+        # score_summary = next (
 
-            detail
-            for detail in score_details
-            if detail["type"] == "score_summary"
+        #     detail
+        #     for detail in score_details
+        #     if detail["type"] == "score_summary"
 
-        )
+        # )
 
 
-        success_rate = min (
+        # success_rate = min (
 
-            100,
-            max(0, int(total_score / 1300)),
+        #     100,
+        #     max(0, int(total_score / 1300)),
 
-        )
+        # )
 
-        score_summary["success_rate"] = success_rate
+        # score_summary["success_rate"] = success_rate
 
 
 

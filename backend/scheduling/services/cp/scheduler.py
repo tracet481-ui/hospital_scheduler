@@ -641,7 +641,7 @@ class CPScheduler:
 
         solver = cp_model.CpSolver()
 
-        solver.parameters.max_time_in_seconds = 10
+        solver.parameters.max_time_in_seconds = 20
         solver.parameters.num_search_workers = 8
         solver.parameters.log_search_progress = True
 

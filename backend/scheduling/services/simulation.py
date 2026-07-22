@@ -19,7 +19,7 @@ class SimulationEngine:
         self.surgeries = surgeries
         self.planning_day = planning_day
 
-    def run(self, valid_plan_target=10, max_attempts=50):
+    def run(self, valid_plan_target=10, max_attempts=15):
 
         best_schedule = None
         best_score = float("-inf")
