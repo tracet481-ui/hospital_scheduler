@@ -10,6 +10,11 @@ import { VProgressLinear } from "vuetify/components"
 
 import "./assets/main.css"
 
+import "@mdi/font/css/materialdesignicons.css"
+
+
+
+
 const vuetify = createVuetify({
     components: {
         VProgressLinear,
