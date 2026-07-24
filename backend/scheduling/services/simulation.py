@@ -1,5 +1,6 @@
 from scheduling.services.cp.scheduler import CPScheduler
 from scheduling.services.scoring import calculate_schedule_score
+from scheduling.services.scoring import build_score_details
 from scheduling.services.validators import validate_surgeon_rest_rule
 
 
@@ -68,6 +69,9 @@ class SimulationEngine:
                 surgeries=self.surgeries,
             )
 
+
+
+
             valid_count += 1
 
             result = {
@@ -102,6 +106,18 @@ class SimulationEngine:
         #         "Max All Results:",
         #         max(result["score"] for result in all_results)
         #     )
+
+        # score, details = calculate_schedule_score(schedule, surgeries)
+
+        score_details = build_score_details(score, details)
+
+        from pprint import pprint
+
+        print("\n========== SCORE DETAILS ==========\n")
+
+        pprint(score_details, width=120)
+
+
 
         return (
             best_schedule,

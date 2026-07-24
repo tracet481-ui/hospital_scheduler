@@ -6,7 +6,6 @@ DAY_COUNT = 5
 
 
 
-TOTAL_SLOTS = 20 
 
 
 
@@ -139,16 +138,16 @@ def calculate_schedule_score (schedule, surgeries ) :
     score -= day_balance_penalty
 
 
-    details.append ({
+    details.append({
+         
+        "type": "day_balance",
+        "daily_loads": loads,
+        "max_load": max_load,
+        "min_load": min_load,
+        "raw_value": max_load - min_load,
+        "penalty": day_balance_penalty,
 
-            "type":"day_balance",
-            "daily_load":loads,
-            "mox_loads":max_load,
-            "min_loads":min_load,
-            "penalty":day_balance_penalty
-
-
-        })
+    })
 
 
 
@@ -186,7 +185,7 @@ def calculate_schedule_score (schedule, surgeries ) :
             max_anesthesia = 0
             min_anesthesia = 0 
 
-            anesthesia_penalty = 0
+            anesthesia_balance_penalty = 0
 
 
     score -= anesthesia_balance_penalty
@@ -218,14 +217,13 @@ def calculate_schedule_score (schedule, surgeries ) :
 
     room_schedule = defaultdict(list)
 
-
+    total_room_idle = 0
+    room_idle_details = []
 
     for item in schedule:
-
-        room_schedule[( item.day_index, item.room)].append(item)
-
-        total_room_idle = 0
-        room_idle_details = []
+        room_schedule[
+            (item.day_index, item.room)
+        ].append(item)
 
 
 
@@ -391,6 +389,153 @@ def calculate_schedule_score (schedule, surgeries ) :
 
 
     return score, details
+
+
+def build_score_details(score: int, details: list) -> dict :
+
+    
+    # calculate_schedule_score tarafından üretilen details listesini
+    # DB'ye kaydedilecek düzenli score_details yapısına dönüştürür.
+
+    # Bu fonksiyon yeni bir ceza hesaplamaz.
+    # Yalnızca mevcut hesap sonuçlarını düzenler.
+    
+    priority_items = []
+    day_balance = {}
+    anesthesia_balance = {}
+    room_idle = {}
+    surgeon_idle = {}
+    score_summary = {}
+
+    for detail in details:
+        detail_type = detail.get("type")
+
+        if detail_type == "priority":
+            priority_items.append(detail)
+
+        elif detail_type == "day_balance":
+            day_balance = {
+                "raw_value": detail.get("raw_value", 0),
+                "loss": detail.get("penalty", 0),
+                "details": {
+                    "daily_loads": detail.get(
+                        "daily_loads",
+                        [],
+                    ),
+                    "max_load": detail.get("max_load", 0),
+                    "min_load": detail.get("min_load", 0),
+                },
+            }
+
+        elif detail_type == "anesthesia_balance" :
+
+             anesthesia_balance = {
+
+                "raw value" : (
+
+                    detail.get("max_load", 0)
+                    -   detail.get("min_load", 0)
+                     
+                ),
+
+                "loss" : detail.get("penalty", 0),
+                "details" : {
+
+                    "team_loads" :detail.get(
+                        "anesthesia_load",
+                        {},
+                    ),
+
+                    "max_load" : detail.get("max_load", 0),
+                    "min_load": detail.get("min_load", 0),
+                     
+                },
+                  
+             }
+
+
+        elif detail_type == "room_idle_time" :
+
+             room_idle = {
+
+                "raw value" : detail.get(
+
+                    "total_idle_slots",
+                    0,
+                     
+                ),
+
+                "loss" : detail.get("penalty", 0),
+                "details" : detail.get("gaps", []), 
+                  
+             } 
+
+
+        elif detail_type == "surgeon_idle_time":
+
+             surgeon_idle = {
+
+                "raw_value" : detail.get(
+
+                    "total_idle_slots",
+                    0,
+                     
+                ),
+
+                "loss" : detail.get("penalty", 0),
+                "details" : detail.get("gaps", []),
+                  
+             }
+
+
+        elif detail_type == "score_summary" :
+
+             score_summary= detail
+
+
+
+    losses = {
+
+        "day_balance" : day_balance,
+        "anesthesia_balance" : anesthesia_balance,
+        "room_idle" : room_idle,
+        "surgeon_idle" : surgeon_idle,
+         
+    }
+
+    total_loss = sum (
+
+        loss_data.get("loss", 0)
+
+        for loss_data in losses.values()
+         
+    )
+
+    return {
+
+        "priority": {
+
+            "score" : score_summary.get(
+
+                "priority_score",
+                0,
+                 
+            ),
+
+            "details" : priority_items,
+             
+        },
+
+        "losses": losses,
+        "total_losses" : total_loss,
+        "final_score" : score,  
+         
+    }
+
+
+
+
+     
     
 
 
@@ -400,64 +545,3 @@ def calculate_schedule_score (schedule, surgeries ) :
 
     
 
-
-# def calculate_priority_score(schedule, surgeries ) :
-
-#     total_score = 0
-#     score_details = []
-
-
-#     surgery_map = {
-
-
-#         (surgery.patient, surgery.operation  ) : surgery 
-#         for surgery in surgeries  
-#     }
-
-
-#     for item in schedule :
-
-#         surgery = surgery_map[(item.patient, item.operation)] 
-
-
-#         if surgery.priority == "Kritik" : 
-#             weight = 100
-
-        
-#         elif surgery.priority == "Yüksek" :
-#             weight = 50
-
-
-        
-#         elif surgery.priority == "Orta" :
-#             weight = 20
-
-
-#         else :
-#             weight = 5 
-
-
-        
-#         # contribution = (TOTAL_SLOT - item.start_slot) * weight
-
-#         WEEK_TOTAL_SLOT = 5 - TOTAL_SLOTS
-#         global_start = item.day_index * TOTAL_SLOTS + item.start_slot
-#         contrubition = (WEEK_TOTAL_SLOT - global_start) * weight
-
-#         total_score += contrubition
-
-
-
-#         score_details.append({
-
-#             "patient" : item.patient,
-#             "operation" : item.operation,
-#             "priority" : surgery.priority,
-#             "start_slot" : item.start_slot,
-#             "score" : contrubition,
-
-#         })
-
-
-    
-#     return total_score, score_details

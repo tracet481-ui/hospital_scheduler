@@ -8,7 +8,7 @@ from scheduling.services.validators import validate_surgeon_rest_rule
 
 DAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"]
 
-TOTAL_SLOTS = 20
+TOTAL_SLOTS_PER_DAY = 20
 
 DAY_BALANCE_WEIGHT = 300
 ANESTHESIA_BALANCE_WEIGHT = 50
@@ -41,7 +41,7 @@ class CPScheduler:
 
         for surgery_index, surgery in enumerate(self.surgeries):
 
-            latest_start = TOTAL_SLOTS - surgery.duration
+            latest_start = TOTAL_SLOTS_PER_DAY - surgery.duration
 
             day_vars[surgery_index] = model.NewIntVar(
                 0,
@@ -208,14 +208,14 @@ class CPScheduler:
 
         for surgeon_index in range(len(self.surgeons)):
             for day_index in range(5):
-                for slot in range(TOTAL_SLOTS):
+                for slot in range(TOTAL_SLOTS_PER_DAY):
                     surgeon_work_terms[(surgeon_index, day_index, slot)] = []
                     surgeon_start_terms[(surgeon_index, day_index, slot)] = []
 
 
         for surgery_index, surgery in enumerate(self.surgeries):
 
-            latest_start = TOTAL_SLOTS - surgery.duration
+            latest_start = TOTAL_SLOTS_PER_DAY - surgery.duration
 
             for surgeon_index in range(len(self.surgeons)):
                 for day_index in range(5):
@@ -287,7 +287,7 @@ class CPScheduler:
 
         for surgeon_index in range(len(self.surgeons)):
             for day_index in range(5):
-                for slot in range(MAX_CONTINUOUS_SURGEON_WORK, TOTAL_SLOTS):
+                for slot in range(MAX_CONTINUOUS_SURGEON_WORK, TOTAL_SLOTS_PER_DAY):
 
                     previous_work_terms = []
 
@@ -534,19 +534,19 @@ class CPScheduler:
 
                 first_start = model.NewIntVar(
                     0,
-                    TOTAL_SLOTS,
+                    TOTAL_SLOTS_PER_DAY,
                     f"first_start_surgeon_{surgeon_index}_day_{day_index}",
                 )
 
                 last_end = model.NewIntVar(
                     0,
-                    TOTAL_SLOTS,
+                    TOTAL_SLOTS_PER_DAY,
                     f"last_end_surgeon_{surgeon_index}_day_{day_index}",
                 )
 
                 total_work = model.NewIntVar(
                     0,
-                    TOTAL_SLOTS,
+                    TOTAL_SLOTS_PER_DAY,
                     f"total_work_surgeon_{surgeon_index}_day_{day_index}",
                 )
 
@@ -568,7 +568,7 @@ class CPScheduler:
 
                 idle = model.NewIntVar(
                     0,
-                    TOTAL_SLOTS,
+                    TOTAL_SLOTS_PER_DAY,
                     f"surgeon_idle_{surgeon_index}_{day_index}",
                 )
 
@@ -591,7 +591,7 @@ class CPScheduler:
         for surgery_index, surgery in enumerate(self.surgeries):
 
             global_start = (
-                day_vars[surgery_index] * TOTAL_SLOTS
+                day_vars[surgery_index] * TOTAL_SLOTS_PER_DAY
                 + start_vars[surgery_index]
             )
 

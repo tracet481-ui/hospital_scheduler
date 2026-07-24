@@ -417,6 +417,12 @@ total_score, score_details = calculate_schedule_score(
     surgeries=surgeries,
 )
 
+from pprint import pprint
+
+print("\n===== SCORE DETAILS =====\n")
+
+pprint(score_details, width=140)
+
 
 print("\nBEST PLAN SCORE CHECK")
 print("=====================")
