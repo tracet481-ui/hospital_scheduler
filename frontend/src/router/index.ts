@@ -31,83 +31,130 @@ const router = createRouter({
           meta : { requiresAuth : true },
           children : [
 
-            {
+              {
+                path: "/schedule",
+                name: "schedule",
+                component: ScheduleView,
+                meta: {
+                  requiresAuth: true,
+                  title: "Plan Oluştur",
+                  description: "Yeni haftalık ameliyathane planı oluşturun",
+                },
+              },
+              {
+                path: "/doctor",
+                name: "doctor",
+                component: DoctorScheduleView,
+                meta: {
+                  requiresAuth: true,
+                  title: "Doktor Takvimleri",
+                  description: "Doktorların haftalık operasyon takvimlerini görüntüleyin",
+                },
+              },
+              {
+                path: "/plans",
+                name: "plans",
+                component: PlanListView,
+                meta: {
+                  requiresAuth: true,
+                  title: "Kayıtlı Planlar",
+                  description: "Daha önce oluşturulan planları inceleyin",
+                },
+              },
 
-              path : "/",
-              name : "dashboard",
-              component :ScheduleView,
+              {
+                path: "/plans/:id",
+                name: "plan-detail",
+                component: PlanDetailView,
+                meta: {
+                  requiresAuth: true,
+                  title: "Plan Detayı",
+                  description: "Seçilen ameliyathane planının ayrıntılarını görüntüleyin",
+                },
+              },
 
-            },
-
-            {
-
-              path : "schedule",
-              name : "schedule",
-              component : ScheduleView,
-              meta : {
-
-                requiresAuth : true,
-
-              }
-
-            },
+              {
+                path: "/operations",
+                name: "operations",
+                component: OperationManagementView,
+                meta: {
+                  requiresAuth: true,
+                  title: "Operasyon Yönetimi",
+                  description: "Operasyon taleplerini görüntüleyin ve yönetin",
+                },
+              },
 
 
-            {
+              {
 
-              path : "/doctor-schedules",
-              name : "doctor-schedules",
-              component : DoctorScheduleView,
-              meta : {
-
-                requiresAuth : true,
+                path : "/operations/new",
+                name : "operation-create",
+                component : SurgeryRequestCreateView,
+                meta: {
+                  requiresAuth :true,
+                  title : "Operasyon Kaydı",
+                  description : "Operasyon düzenleyin",
+                }
 
               },
 
-            },
 
 
-            {
 
-              path : "/plans",
-              name : "plans",
-              component : PlanListView,
-              meta : {
+              // {
+              //   path: "/schedule",
+              //   name: "schedule",
+              //   component: ScheduleView,
+              //   meta: {
+              //     requiresAuth: true,
+              //     title: "Plan Oluştur",
+              //   },
+              // },
+              // {
+              //   path: "/doctor",
+              //   name: "doctor",
+              //   component: DoctorScheduleView,
+              //   meta: {
+              //     requiresAuth: true,
+              //     title: "Doktor Takvimleri",
+              //   },
+              // },
+              // {
+              //   path: "/plans",
+              //   name: "plans",
+              //   component: PlanListView,
+              //   meta: {
+              //     requiresAuth: true,
+              //     title: "Kayıtlı Planlar",
+              //   },
+              // },
+              // {
+              //   path: "/operations",
+              //   name: "operations",
+              //   component: OperationManagementView,
+              //   meta: {
+              //     requiresAuth: true,
+              //     title: "Operasyon Yönetimi",
+              //   },
+              // },
 
-                requiresAuth : true
 
-              },
+            // {
 
-            },
+            //   path : "/operations",
+            //   name : "operations",
+            //   component : OperationManagementView,
 
-            {
-
-              path : "/plans/:id",
-              name : "plan-detail",
-              component : PlanDetailView,
-              meta : {
-                  requiresAuth : true
-              },
-
-            },
+            // },
 
 
-            {
+            // {
 
-              path : "/operations",
-              name : "operations",
-              component : OperationManagementView,
+            //   path : "/operations/new",
+            //   name : "operation-create",
+            //   component : SurgeryRequestCreateView,
 
-            },
-
-
-            {
-
-              path : "/operations/new",
-              name : "operation-create",
-              component : SurgeryRequestCreateView,
-
-            },
+            // },
 
           ],
 
@@ -149,4 +196,7 @@ export default router
 // });
 
 // export default router;
+
+
+
 

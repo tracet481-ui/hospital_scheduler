@@ -50,9 +50,9 @@ const handleLogout = () => {
                 <p>Haftalık ameliyathane planı üret</p>
             </div>
 
-            <button class="logout-button" @click="handleLogout">
+            <!-- <button class="logout-button" @click="handleLogout">
                 Çıkış Yap
-            </button>
+            </button> -->
         </header>
 
         <section class="action-card">

@@ -51,7 +51,26 @@ const logout = () => {
       </RouterLink>
 
       <nav class="sidebar-navigation">
+
         <RouterLink
+                    v-for = "item in menuItems"
+                    :key = "item.route"
+                    :to ="item.route"
+                    class = "sidebar-item"
+                    :aria-label = "item.title"  >
+                
+            <span class = "item-icon">
+                        <i :class = "['mdi', item.icon]"></i>                
+            </span>
+
+            <span class = "sidebar-tooltip">
+                        {{ item.title }}
+            </span>
+                    
+        </RouterLink>
+
+
+        <!-- <RouterLink
           v-for="item in menuItems"
           :key="item.route"
           :to="item.route"
@@ -65,21 +84,21 @@ const logout = () => {
           <span class="item-title">
             {{ item.title }}
           </span>
-        </RouterLink>
+        </RouterLink> -->
       </nav>
     </div>
 
     <button
       type="button"
       class="sidebar-item logout-item"
-      title="Çıkış Yap"
+      aria-label ="Çıkış Yap"
       @click="logout"
     >
       <span class="item-icon">
         <i class="mdi mdi-logout"></i>
       </span>
 
-      <span class="item-title">
+      <span class="slider-tooltip">
         Çıkış Yap
       </span>
     </button>
@@ -107,9 +126,9 @@ const logout = () => {
   background:
     linear-gradient(
       180deg,
-      #0f3f46 0%,
-      #0f2f36 48%,
-      #0d1f2b 100%
+      #ffffff 0%,
+      #ffffff 48%,
+      #ffffff 100%
     );
 
   border-right: 1px solid rgb(255 255 255 / 8%);
@@ -120,10 +139,10 @@ const logout = () => {
     box-shadow 220ms ease;
 }
 
-.app-sidebar:hover {
+/* .app-sidebar:hover {
   width: 250px;
   box-shadow: 14px 0 36px rgb(15 23 42 / 16%);
-}
+} */
 
 .sidebar-top {
   display: flex;
@@ -154,6 +173,17 @@ const logout = () => {
   flex: 0 0 52px;
   align-items: center;
   justify-content: center;
+
+  width: 46px;
+  height: 46px;
+
+  font-size: 23px;
+  border-radius: 13px;
+
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .brand-icon {
@@ -188,10 +218,10 @@ const logout = () => {
     transform 180ms ease;
 }
 
-.app-sidebar:hover .brand-content {
+/* .app-sidebar:hover .brand-content {
   opacity: 1;
   transform: translateX(0);
-}
+} */
 
 .brand-content strong {
   font-size: 19px;
@@ -240,18 +270,14 @@ const logout = () => {
   transform: translateX(2px);
 }
 
-.sidebar-item.router-link-active {
+
+.sidebar-item.router-link-active .item-icon {
   color: #ffffff;
-
-  background:
-    linear-gradient(
-      90deg,
-      rgb(20 184 166 / 50%),
-      rgb(20 184 166 / 18%)
-    );
-
-  border-color: rgb(94 234 212 / 14%);
+  background: linear-gradient(135deg, #14b8a6, #0f8f83);
+  box-shadow: 0 8px 18px rgb(20 184 166 / 28%);
 }
+
+
 
 .sidebar-item.router-link-active::before {
   position: absolute;
@@ -271,7 +297,7 @@ const logout = () => {
   font-size: 23px;
 }
 
-.item-title {
+/* .item-title {
   min-width: 160px;
 
   font-size: 14px;
@@ -284,15 +310,15 @@ const logout = () => {
   transition:
     opacity 150ms ease,
     transform 180ms ease;
-}
+} */
 
-.app-sidebar:hover .item-title {
+/* .app-sidebar:hover .item-title {
   opacity: 1;
   transform: translateX(0);
-}
+} */
 
 .logout-item {
-  color: #fecaca;
+  color: #0a0000;
 }
 
 .logout-item:hover {
@@ -308,8 +334,8 @@ const logout = () => {
     padding-left: 8px;
   }
 
-  .brand-content,
-  .item-title,
+  /* .brand-content,
+  .item-title, */
   .app-sidebar:hover .brand-content,
   .app-sidebar:hover .item-title {
     opacity: 0;
@@ -321,4 +347,62 @@ const logout = () => {
     flex-basis: 50px;
   }
 }
+
+.sidebar-tooltip {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 14px);
+  z-index: 300;
+
+  padding: 8px 11px;
+
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+
+  pointer-events: none;
+
+  background: #111827;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgb(15 23 42 / 22%);
+
+  opacity: 0;
+  transform: translate(-6px, -50%);
+
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.sidebar-tooltip::before {
+  position: absolute;
+  top: 50%;
+  left: -5px;
+
+  width: 10px;
+  height: 10px;
+
+  content: "";
+
+  background: #111827;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.sidebar-item:hover .sidebar-tooltip {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+.sidebar-item:hover .item-icon {
+  color: #5eead4;
+  background: rgb(20 184 166 / 12%);
+}
+
+.app-sidebar {
+  width: 78px;
+  overflow: visible;
+}
+
 </style>

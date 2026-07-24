@@ -187,6 +187,24 @@ class SchedulePlan(BaseModel):
     blank = True,
     )
 
+    # Score result Rapor ---------------------------------------------
+
+    score_details = models.JSONField(
+
+        default = dict,
+        blank = True,
+
+    )
+
+    weight_snapshot = models.JSONField(
+
+        default = dict,
+        blank = True,   
+
+    )
+
+    # --------------------------------------------- Score result Rapor
+
     def __str__(self):
         return f"{self.algorithm_name} - {self.planning_day} - {self.score} "
     

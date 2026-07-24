@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue"
+import { computed, onMounted, ref, watch } from "vue"
 import { useRouter } from "vue-router"
 import { getPlans } from "../services/scheduleApi"
 
@@ -9,6 +9,77 @@ const plans = ref([])
 const loading = ref(false)
 const errorMessage = ref("")
 
+// -----------------------------------------------------------
+// Page ekleme
+// -----------------------------------------------------------
+
+const currentPage = ref(1)
+
+const pageSize = 20
+
+
+
+const totalPages = computed (() => {
+
+    return Math.max(
+            1,
+            Math.ceil(plans.value.length / pageSize)
+        )
+
+})
+
+const paginatedPlans = computed (() => {
+
+    const startIndex = (currentPage.value - 1) * pageSize
+    const endIndex = startIndex + pageSize
+
+
+    return plans.value.slice (startIndex,   endIndex) 
+
+})
+
+
+const firstVisibleRecord = computed (() => {
+
+    if (plans.value.length === 0) return 0
+
+    return (currentPage.value - 1) * pageSize + 1
+
+})
+
+
+const lastVisibleRecord = computed  (() => {
+
+    return Math.min(
+
+        currentPage.value * pageSize,
+
+        plans.value.length
+
+    )
+
+})
+
+
+
+const changePage = (page) => {
+
+    if (page < 1    ||      page > totalPages.value) {
+
+        return
+
+    }
+
+    currentPage.value = page
+
+}
+
+
+// -----------------------------------------------------------
+//                                                 Page ekleme
+// -----------------------------------------------------------
+
+
 const loadPlans = async () => {
     loading.value = true
     errorMessage.value = ""
@@ -16,6 +87,7 @@ const loadPlans = async () => {
     try {
         const response = await getPlans()
         plans.value = response.data
+        currentPage.value = 1
     } catch (error) {
         console.log(error)
         errorMessage.value = "Planlar yüklenirken hata oluştu!"
@@ -67,7 +139,7 @@ onMounted(loadPlans)
                 </thead>
 
                 <tbody>
-                    <tr v-for="plan in plans" :key="plan.id">
+                    <tr v-for="plan in paginatedPlans" :key="plan.id">
                         <td>{{ plan.id }}</td>
                         <td>{{ plan.score }}</td>
 
@@ -96,13 +168,83 @@ onMounted(loadPlans)
                         <td>{{ plan.is_feasible ? "Evet" : "Hayır" }}</td>
                         <td>{{ plan.created_at }}</td>
                         <td>
-                            <button @click="goDetail(plan.id)">
+                            <button
+                                
+                                class = "detail-button"
+                                @click="goDetail(plan.id)">
+                                
                                 Detay
+
                             </button>
                         </td>
                     </tr>
                 </tbody>
             </table>
+
+            <div
+                v-if ="!loading && plans.length"
+                class = "patination-wrapper"    >
+            
+                <p
+                    class = "pagination-info">
+                
+                    {{ plans.length }} kayıttan
+
+                    {{ firstVisibleRecord }} - {{ lastVisibleRecord }}
+
+                    arası gösteriliyor
+                
+                </p>
+
+
+                <div
+                    v-if = "totalPages" 
+                    class = "pagination">
+                
+                    <button
+                        class = "pagination-button"
+                        :disabled = "currentPage === 1"
+                        @click = "changePage ( currentPage - 1 )">
+                    
+                        <i
+                            class="mdi mdi-chevron-left"></i>
+                    
+                    </button>
+
+
+                    <button
+                            v-for = "page in totalPages"
+                            :key = "page"
+                            class = "pagination-button"
+                            :class = "{
+
+                                active : currentPage === page
+
+                            }"
+
+                            @click = "changePage(page)"     >
+                        
+                            {{ page }}
+                        
+                    </button>
+
+
+                    <button
+                                class = "pagination-button"
+                                :disabled = "currentPage === totalPages"
+                                @click = "changePage(currentPage + 1)">
+                            
+                        <i
+                                class = "mdi mdi-chevron-right"></i>    
+                        
+                    </button>
+
+                </div>
+                        
+            </div>
+
+
+
 
             <p v-if="!loading && !plans.length">
                 Henüz kayıtlı plan yok.
@@ -154,12 +296,15 @@ onMounted(loadPlans)
     font-weight: 700;
 }
 
-button {
-    border: none;
+.detail-button {
     padding: 8px 12px;
-    border-radius: 8px;
-    background: #2563eb;
+
     color: white;
+
+    background: #2563eb;
+    border: none;
+    border-radius: 8px;
+
     cursor: pointer;
 }
 
@@ -185,7 +330,68 @@ button {
 }
 
 
+.pagination-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
 
+    margin-top: 20px;
+}
+
+.pagination-info {
+    margin: 0;
+
+    font-size: 13px;
+    color: #64748b;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pagination-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 38px;
+    height: 38px;
+
+    padding: 0 10px;
+
+    color: #475569;
+
+    background: #ffffff;
+    border: 1px solid #dbe4ee;
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.pagination-button:hover:not(:disabled) {
+    color: #ffffff;
+
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.pagination-button.active {
+    color: #ffffff;
+
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+.pagination-button:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.4;
+}
 
 
 </style>

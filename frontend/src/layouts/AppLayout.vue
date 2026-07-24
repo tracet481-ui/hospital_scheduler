@@ -30,7 +30,7 @@
 
                     <h2>HYS</h2>
 
-                    <p>Planlama Paneli</p>
+                    <!-- <p>Planlama Paneli</p> -->
 
                 </div>
 
@@ -70,13 +70,13 @@
                     Çıkış
                 </button>
 
-            </nav> -->
-
+            </nav> -->l
+<!-- 
             <button class ="logout-button" @click="handleLogout">
 
                 Çıkış Yap
 
-            </button>
+            </button> -->
 
         </aside>
 
@@ -135,13 +135,14 @@
 }
 
 .brand-icon {
-  width: 44px;
-  height: 44px;
+  width: 122px;
+  height: 88px;
   border-radius: 50%;
   background: white;
   color: #003b73;
   display: grid;
   place-items: center;
+  border-bottom : solid ;
   font-size: 28px;
   font-weight: 800;
 }
@@ -176,7 +177,7 @@
   background: rgba(255,255,255,0.14);
 }
 
-.logout-button {
+/* .logout-button {
   margin-top: auto;
   background: #ffffff;
   color: #003b73;
@@ -185,7 +186,7 @@
   padding: 12px;
   font-weight: 800;
   cursor: pointer;
-}
+} */
 
 .main-area {
   flex: 1;
