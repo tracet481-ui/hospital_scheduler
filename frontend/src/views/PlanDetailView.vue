@@ -10,16 +10,20 @@ const loading = ref(false)
 const errorMessage = ref("")
 const recentPlansDialog = ref(false)
 
-const groupedSchedule = computed(() => {
-    if (!plan.value?.items) return []
 
-    const days = [
+const days = [
         "Pazartesi",
         "Salı",
         "Çarşamba",
         "Perşembe",
         "Cuma",
     ]
+
+
+const groupedSchedule = computed(() => {
+    if (!plan.value?.items) return []
+
+    
 
     return days.map((day, index) => ({
         dayName: day,
@@ -110,8 +114,134 @@ const formatPercentage = (percentage) => {
 }
 
 
-
 // raporlama --------------------------------------------- 
+
+
+
+// Rapor ekranı --------------------------------------------------------------
+
+
+const scoreDetails = computed(() => {
+    return plan.value?.score_details ?? {}
+})
+
+const priorityReport = computed(() => {
+    return scoreDetails.value?.priority ?? {
+        score: 0,
+        details: [],
+    }
+})
+
+const losses = computed(() => {
+    return scoreDetails.value?.losses ?? {}
+})
+
+const dayBalance = computed(() => {
+    return losses.value?.day_balance ?? {
+        loss: 0,
+        raw_value: 0,
+        details: {
+            daily_loads: [],
+            min_load: 0,
+            max_load: 0,
+        },
+    }
+})
+
+const anesthesiaBalance = computed(() => {
+    return losses.value?.anesthesia_balance ?? {
+        loss: 0,
+        raw_value: 0,
+        details: {
+            team_loads: {},
+            min_load: 0,
+            max_load: 0,
+        },
+    }
+})
+
+const roomIdle = computed(() => {
+    return losses.value?.room_idle ?? {
+        loss: 0,
+        raw_value: 0,
+        details: [],
+    }
+})
+
+const surgeonIdle = computed(() => {
+    return losses.value?.surgeon_idle ?? {
+        loss: 0,
+        raw_value: 0,
+        details: [],
+    }
+})
+
+const priorityItems = computed(() => {
+    return Array.isArray(priorityReport.value?.details)
+        ? priorityReport.value.details
+        : []
+})
+
+const roomIdleItems = computed(() => {
+    return Array.isArray(roomIdle.value?.details)
+        ? roomIdle.value.details
+        : []
+})
+
+const surgeonIdleItems = computed(() => {
+    return Array.isArray(surgeonIdle.value?.details)
+        ? surgeonIdle.value.details
+        : []
+})
+
+const dailyLoads = computed(() => {
+    const loads = dayBalance.value?.details?.daily_loads ?? []
+
+    return days.map((day, index) => ({
+        day,
+        load: Number(loads[index] ?? 0),
+    }))
+})
+
+const anesthesiaLoads = computed(() => {
+    const loads =
+        anesthesiaBalance.value?.details?.team_loads ?? {}
+
+    return Object.entries(loads).map(([team, load]) => ({
+        team,
+        load: Number(load),
+    }))
+})
+
+const totalLoss = computed(() => {
+    return Number(scoreDetails.value?.total_losses ?? 0)
+})
+
+const finalScore = computed(() => {
+    return Number(
+        scoreDetails.value?.final_score ??
+        plan.value?.score ??
+        0,
+    )
+})
+
+const getDayName = (dayIndex) => {
+    return days[dayIndex] ?? `Gün ${dayIndex}`
+}
+
+const formatScore = (value) => {
+    return new Intl.NumberFormat("tr-TR").format(
+        Number(value ?? 0),
+    )
+}
+
+
+
+// --------------------------------------------------------- rapor ekranı 
+
+
+
+
 
 const reportDialog = ref(false)
 
@@ -221,6 +351,376 @@ onMounted(loadPlanDetail)
         <p v-if="errorMessage" class="error">
             {{ errorMessage }}
         </p>
+<!-- 
+        rapor ekranı temp ----------------------------------------------- -->
+
+
+
+        <section
+            v-if="plan && scoreDetails.final_score !== undefined"
+            class="report-section"
+        >
+            <div class="section-heading">
+                <div>
+                    <span class="section-eyebrow">Performans analizi</span>
+                    <h2>Plan Raporu</h2>
+                </div>
+
+                <span class="report-status">
+                    {{ plan.is_feasible ? "Geçerli plan" : "Geçersiz plan" }}
+                </span>
+            </div>
+
+            <div class="score-dashboard">
+                <article class="metric-card metric-card-primary">
+                    <span class="metric-label">Final skor</span>
+                    <strong>{{ formatScore(finalScore) }}</strong>
+                    <small>Öncelik puanı eksi toplam kayıp</small>
+                </article>
+
+                <article class="metric-card">
+                    <span class="metric-label">Öncelik puanı</span>
+                    <strong>
+                        {{ formatScore(priorityReport.score) }}
+                    </strong>
+                    <small>
+                        {{ priorityItems.length }} operasyon
+                    </small>
+                </article>
+
+                <article class="metric-card metric-card-danger">
+                    <span class="metric-label">Toplam kayıp</span>
+                    <strong>
+                        -{{ formatScore(totalLoss) }}
+                    </strong>
+                    <small>Soft constraint cezaları</small>
+                </article>
+
+                <article class="metric-card">
+                    <span class="metric-label">Başarı oranı</span>
+                    <strong>%{{ scorePercent }}</strong>
+                    <small>Plan performans göstergesi</small>
+                </article>
+            </div>
+
+            <div class="penalty-grid">
+                <article class="penalty-card">
+                    <div class="penalty-card-header">
+                        <span>Gün dengesi</span>
+                        <strong>
+                            -{{ formatScore(dayBalance.loss) }}
+                        </strong>
+                    </div>
+
+                    <p>
+                        Günler arasındaki yük farkı:
+                        <b>{{ dayBalance.raw_value ?? dayBalance["raw value"] ?? 0 }}</b>
+                        slot
+                    </p>
+                </article>
+
+                <article class="penalty-card">
+                    <div class="penalty-card-header">
+                        <span>Anestezi dengesi</span>
+                        <strong>
+                            -{{ formatScore(anesthesiaBalance.loss) }}
+                        </strong>
+                    </div>
+
+                    <p>
+                        Takımlar arasındaki yük farkı:
+                        <b>
+                            {{
+                                anesthesiaBalance.raw_value ??
+                                anesthesiaBalance["raw value"] ??
+                                0
+                            }}
+                        </b>
+                        slot
+                    </p>
+                </article>
+
+                <article class="penalty-card">
+                    <div class="penalty-card-header">
+                        <span>Oda boşlukları</span>
+                        <strong>
+                            -{{ formatScore(roomIdle.loss) }}
+                        </strong>
+                    </div>
+
+                    <p>
+                        Toplam
+                        <b>
+                            {{
+                                roomIdle.raw_value ??
+                                roomIdle["raw value"] ??
+                                0
+                            }}
+                        </b>
+                        boş slot
+                    </p>
+                </article>
+
+                <article class="penalty-card">
+                    <div class="penalty-card-header">
+                        <span>Cerrah boşlukları</span>
+                        <strong>
+                            -{{ formatScore(surgeonIdle.loss) }}
+                        </strong>
+                    </div>
+
+                    <p>
+                        Toplam
+                        <b>
+                            {{
+                                surgeonIdle.raw_value ??
+                                surgeonIdle["raw value"] ??
+                                0
+                            }}
+                        </b>
+                        boş slot
+                    </p>
+                </article>
+            </div>
+
+            <div class="report-two-column">
+                <article class="report-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <span class="panel-kicker">Haftalık dağılım</span>
+                            <h3>Gün yükleri</h3>
+                        </div>
+
+                        <span>
+                            Min {{ dayBalance.details?.min_load ?? 0 }}
+                            ·
+                            Maks {{ dayBalance.details?.max_load ?? 0 }}
+                        </span>
+                    </div>
+
+                    <div class="load-list">
+                        <div
+                            v-for="item in dailyLoads"
+                            :key="item.day"
+                            class="load-row"
+                        >
+                            <span>{{ item.day }}</span>
+
+                            <div class="load-track">
+                                <div
+                                    class="load-fill"
+                                    :style="{
+                                        width: `${
+                                            dayBalance.details?.max_load
+                                                ? (
+                                                    item.load /
+                                                    dayBalance.details.max_load
+                                                ) * 100
+                                                : 0
+                                        }%`,
+                                    }"
+                                ></div>
+                            </div>
+
+                            <strong>{{ item.load }}</strong>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="report-panel">
+                    <div class="panel-heading">
+                        <div>
+                            <span class="panel-kicker">Kaynak dağılımı</span>
+                            <h3>Anestezi yükleri</h3>
+                        </div>
+
+                        <span>
+                            Min {{ anesthesiaBalance.details?.min_load ?? 0 }}
+                            ·
+                            Maks {{ anesthesiaBalance.details?.max_load ?? 0 }}
+                        </span>
+                    </div>
+
+                    <div class="team-grid">
+                        <div
+                            v-for="item in anesthesiaLoads"
+                            :key="item.team"
+                            class="team-load-card"
+                        >
+                            <span>{{ item.team }}</span>
+                            <strong>{{ item.load }}</strong>
+                            <small>slot</small>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <article class="report-panel">
+                <div class="panel-heading">
+                    <div>
+                        <span class="panel-kicker">Kaynak kaybı</span>
+                        <h3>Oda boşlukları</h3>
+                    </div>
+
+                    <span>{{ roomIdleItems.length }} kayıt</span>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Gün</th>
+                                <th>Oda</th>
+                                <th>Önceki hasta</th>
+                                <th>Sonraki hasta</th>
+                                <th>Boşluk</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr
+                                v-for="(gap, index) in roomIdleItems"
+                                :key="`room-${index}`"
+                            >
+                                <td>{{ getDayName(gap.day_index) }}</td>
+                                <td>
+                                    <span class="resource-badge">
+                                        {{ gap.room }}
+                                    </span>
+                                </td>
+                                <td>{{ gap.from_patient }}</td>
+                                <td>{{ gap.to_patient }}</td>
+                                <td>
+                                    <span class="gap-badge">
+                                        {{ gap.gap }} slot
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <tr v-if="!roomIdleItems.length">
+                                <td colspan="5" class="empty-table">
+                                    Oda boşluğu bulunmuyor.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="report-panel">
+                <div class="panel-heading">
+                    <div>
+                        <span class="panel-kicker">Personel kaybı</span>
+                        <h3>Cerrah boşlukları</h3>
+                    </div>
+
+                    <span>{{ surgeonIdleItems.length }} kayıt</span>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Gün</th>
+                                <th>Cerrah</th>
+                                <th>Önceki hasta</th>
+                                <th>Sonraki hasta</th>
+                                <th>Boşluk</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr
+                                v-for="(gap, index) in surgeonIdleItems"
+                                :key="`surgeon-${index}`"
+                            >
+                                <td>{{ getDayName(gap.day_index) }}</td>
+                                <td>
+                                    <span class="resource-badge surgeon">
+                                        {{ gap.surgeon }}
+                                    </span>
+                                </td>
+                                <td>{{ gap.from_patient }}</td>
+                                <td>{{ gap.to_patient }}</td>
+                                <td>
+                                    <span class="gap-badge">
+                                        {{ gap.gap }} slot
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <tr v-if="!surgeonIdleItems.length">
+                                <td colspan="5" class="empty-table">
+                                    Cerrah boşluğu bulunmuyor.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article class="report-panel">
+                <div class="panel-heading">
+                    <div>
+                        <span class="panel-kicker">Operasyon katkısı</span>
+                        <h3>Öncelik puanları</h3>
+                    </div>
+
+                    <span>{{ priorityItems.length }} operasyon</span>
+                </div>
+
+                <div class="table-wrapper priority-table-wrapper">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Hasta</th>
+                                <th>Operasyon</th>
+                                <th>Öncelik</th>
+                                <th>Gün</th>
+                                <th>Başlangıç slotu</th>
+                                <th>Puan</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr
+                                v-for="item in priorityItems"
+                                :key="item.patient"
+                            >
+                                <td>
+                                    <strong>{{ item.patient }}</strong>
+                                </td>
+                                <td>{{ item.operation }}</td>
+                                <td>
+                                    <span
+                                        class="priority-badge"
+                                        :class="{
+                                            critical: item.priority === 'Kritik',
+                                            high: item.priority === 'Yüksek',
+                                            medium: item.priority === 'Orta',
+                                            low: item.priority === 'Düşük',
+                                        }"
+                                    >
+                                        {{ item.priority }}
+                                    </span>
+                                </td>
+                                <td>{{ getDayName(item.day_index) }}</td>
+                                <td>{{ item.start_slot }}</td>
+                                <td class="score-cell">
+                                    {{ formatScore(item.score) }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+<!-- 
+        ------------------------------------------------   rapor ekranı temp -->
+
+
+
+
 
         <section v-if="plan" class="card">
             <div class="summary-grid">
@@ -860,4 +1360,379 @@ onMounted(loadPlanDetail)
         grid-template-columns: 1fr;
     }
 }
+
+
+/* 
+rapor ekran css ---------------------------------------------------- */
+
+.report-section {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    margin-top: 28px;
+}
+
+.section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.section-heading h2 {
+    margin: 4px 0 0;
+    color: #0f172a;
+    font-size: 28px;
+}
+
+.section-eyebrow,
+.panel-kicker {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.report-status {
+    padding: 8px 12px;
+    border: 1px solid #bbf7d0;
+    border-radius: 999px;
+    background: #f0fdf4;
+    color: #15803d;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.score-dashboard {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.metric-card {
+    display: flex;
+    min-height: 136px;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    background:
+        linear-gradient(145deg, #ffffff, #f8fafc);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+}
+
+.metric-card-primary {
+    border-color: #bfdbfe;
+    background:
+        linear-gradient(145deg, #eff6ff, #ffffff);
+}
+
+.metric-card-danger {
+    border-color: #fecaca;
+    background:
+        linear-gradient(145deg, #fff1f2, #ffffff);
+}
+
+.metric-label {
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.metric-card strong {
+    color: #0f172a;
+    font-size: 30px;
+    line-height: 1;
+}
+
+.metric-card-danger strong {
+    color: #dc2626;
+}
+
+.metric-card-primary strong {
+    color: #1d4ed8;
+}
+
+.metric-card small {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.penalty-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.penalty-card {
+    padding: 17px;
+    border: 1px solid #e2e8f0;
+    border-radius: 15px;
+    background: #ffffff;
+}
+
+.penalty-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.penalty-card-header span {
+    color: #334155;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.penalty-card-header strong {
+    color: #dc2626;
+    font-size: 18px;
+}
+
+.penalty-card p {
+    margin: 12px 0 0;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.report-two-column {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.report-panel {
+    padding: 22px;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+}
+
+.panel-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.panel-heading h3 {
+    margin: 4px 0 0;
+    color: #0f172a;
+    font-size: 20px;
+}
+
+.panel-heading > span {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.load-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.load-row {
+    display: grid;
+    grid-template-columns: 92px minmax(100px, 1fr) 36px;
+    align-items: center;
+    gap: 12px;
+}
+
+.load-row span {
+    color: #475569;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.load-row strong {
+    color: #0f172a;
+    text-align: right;
+}
+
+.load-track {
+    height: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e2e8f0;
+}
+
+.load-fill {
+    height: 100%;
+    border-radius: inherit;
+    background:
+        linear-gradient(90deg, #2563eb, #60a5fa);
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.team-load-card {
+    display: flex;
+    min-height: 120px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dbeafe;
+    border-radius: 14px;
+    background: #eff6ff;
+}
+
+.team-load-card span {
+    color: #475569;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.team-load-card strong {
+    margin-top: 6px;
+    color: #1d4ed8;
+    font-size: 30px;
+}
+
+.team-load-card small {
+    color: #64748b;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 13px;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+}
+
+.report-table th {
+    padding: 13px 15px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.report-table td {
+    padding: 14px 15px;
+    border-top: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 14px;
+}
+
+.report-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.resource-badge,
+.gap-badge,
+.priority-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.resource-badge {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.resource-badge.surgeon {
+    background: #f5f3ff;
+    color: #6d28d9;
+}
+
+.gap-badge {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.priority-badge.critical {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.priority-badge.high {
+    background: #ffedd5;
+    color: #c2410c;
+}
+
+.priority-badge.medium {
+    background: #fef9c3;
+    color: #a16207;
+}
+
+.priority-badge.low {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.score-cell {
+    color: #15803d !important;
+    font-weight: 800;
+}
+
+.empty-table {
+    padding: 28px !important;
+    color: #94a3b8 !important;
+    text-align: center !important;
+}
+
+.priority-table-wrapper {
+    max-height: 520px;
+    overflow: auto;
+}
+
+@media (max-width: 1100px) {
+    .score-dashboard,
+    .penalty-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 800px) {
+    .report-two-column {
+        grid-template-columns: 1fr;
+    }
+
+    .team-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .score-dashboard,
+    .penalty-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+/* 
+-------------------------------------------------- rapor ekran css */
+
+
+
+
 </style>

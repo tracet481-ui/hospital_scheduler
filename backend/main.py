@@ -1,4 +1,4 @@
-# # from scheduler.models import (
+# Remove-Item -Recurse -Force .venv# # from scheduler.models import (
 # #     Surgeon,
 # #     OperatingRoom,
 # #     AnesthesiaTeam,
@@ -346,6 +346,13 @@ from scheduling.services.simulation import SimulationEngine
 
 from scheduling.services.validators import validate_surgeon_rest_rule
 
+from scheduling.services.scoring import (
+    calculate_schedule_score,
+    build_score_details,
+)
+
+
+
 
 DAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"]
 
@@ -375,6 +382,13 @@ best_schedule, best_score, best_details, all_results = simulation.run(
     valid_plan_target=5,
     max_attempts=20,
 )
+
+
+report_score_details = build_score_details(
+    score=best_score,
+    details=best_details,
+)
+
 
 ##    score check
 print("\n Best Plan Selection Check")
@@ -417,11 +431,27 @@ total_score, score_details = calculate_schedule_score(
     surgeries=surgeries,
 )
 
+report_score_details = build_score_details(
+    score=total_score,
+    details=score_details,
+)
+
 from pprint import pprint
 
-print("\n===== SCORE DETAILS =====\n")
+# print("\n===== SCORE DETAILS =====\n")
 
-pprint(score_details, width=140)
+# pprint(score_details, width=140)
+
+
+
+#  list details  --------------------------------------  
+
+print("\n===== KAYDEDİLECEK SCORE DETAILS =====\n")
+
+pprint(report_score_details, width=140)
+
+
+# -------------------------------------- list details
 
 
 print("\nBEST PLAN SCORE CHECK")
@@ -446,7 +476,11 @@ plan = save_schedule_plan(
     algorithm_name="cp",
     planning_day="week",
     score=total_score,
-    score_details=score_details,
+    # score_details=score_details,
+    score_details=report_score_details,
+    simulation_results=all_results,
+
+
 )
 
 

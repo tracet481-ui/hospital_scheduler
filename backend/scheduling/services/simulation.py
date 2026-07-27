@@ -69,6 +69,11 @@ class SimulationEngine:
                 surgeries=self.surgeries,
             )
 
+            # report_score_details = build_score_details(
+            #     score=score,
+            #     details=score_details,
+            # )
+
 
 
 
@@ -109,13 +114,24 @@ class SimulationEngine:
 
         # score, details = calculate_schedule_score(schedule, surgeries)
 
-        score_details = build_score_details(score, details)
+        # score_details = build_score_details(score, details)
+
+        report_score_details = build_score_details(
+            score=best_score,
+            details=best_details,
+        )
+
+        # from pprint import pprint
+
+        # print("\n========== SCORE DETAILS ==========\n")
+
+        # pprint(score_details, width=120)
+
 
         from pprint import pprint
 
-        print("\n========== SCORE DETAILS ==========\n")
-
-        pprint(score_details, width=120)
+        print("\n========== BEST PLAN SCORE DETAILS ==========\n")
+        pprint(report_score_details, width=120)
 
 
 

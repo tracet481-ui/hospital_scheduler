@@ -26,7 +26,12 @@ from scheduling.services.validators import validate_surgeon_rest_rule
 
 from scheduling.services.schedule_saver import save_schedule_plan
 
-from scheduling.services.scoring import calculate_schedule_score
+from scheduling.services.scoring import (
+                        calculate_schedule_score,
+                        build_score_details, )
+
+
+
 
 from .models import (
     SchedulePlan,
@@ -198,18 +203,26 @@ class GenerateScheduleView(APIView) :
         )
 
 
+        # Rapor listesi ----------------------------------------------------
 
-        score_summary = next (
+
+        report_score_details = build_score_details(
+            score=total_score,
+            details=score_details,
+        )
+
+
+        
+        #  ---------------------------------------------------- Rapor listesi
+
+
+        score_summary = next(
             (
-
-            detail
-            for detail in best_details
-            if detail.get("type") == "score_summary"
-
+                detail
+                for detail in score_details
+                if detail.get("type") == "score_summary"
             ),
-
             None,
-
         )
 
         if score_summary is None :
@@ -226,14 +239,13 @@ class GenerateScheduleView(APIView) :
             )
 
 
-        success_rate = min (
-
+        success_rate = min(
             100,
-            max (0, int (best_score/1300)),
-            
+            max(0, int(total_score / 1300)),
         )
 
-        score_summary ["success_rate"] = success_rate
+        score_summary["success_rate"] = success_rate
+        report_score_details["success_rate"] = success_rate
 
 
 
@@ -371,15 +383,25 @@ class GenerateScheduleView(APIView) :
             })
 
 
-        plan = save_schedule_plan (
+        # plan = save_schedule_plan (
 
-                schedule = best_schedule,
-                algorithm_name = "cp",
-                planning_day = "Haftalık Plan",
-                score = total_score,
-                score_details = score_summary,
-                simulation_results = simulation_results,
-                # success_rate = score_details.get("success_rate",0),
+        #         schedule = best_schedule,
+        #         algorithm_name = "cp",
+        #         planning_day = "Haftalık Plan",
+        #         score = total_score,
+        #         score_details = score_summary,
+        #         simulation_results = simulation_results,
+        #         # success_rate = score_details.get("success_rate",0),
+        # )
+
+
+        plan = save_schedule_plan(
+            schedule=best_schedule,
+            algorithm_name="cp",
+            planning_day="Haftalık Plan",
+            score=total_score,
+            score_details=report_score_details,
+            simulation_results=simulation_results,
         )
 
 
@@ -407,6 +429,18 @@ class GenerateScheduleView(APIView) :
 
         ## ---------------------------- score check 
 
+        # check -----------------------------------------
+        
+        from pprint import pprint
+
+        # print("\n===== KAYDEDİLECEK SCORE DETAILS =====")
+        # pprint(score_details, width=120)
+
+
+        print("\n===== KAYDEDİLECEK SCORE DETAILS =====")
+        pprint(report_score_details, width=120)
+
+        # ----------------------------------------- check
 
 
 
@@ -419,6 +453,7 @@ class GenerateScheduleView(APIView) :
                 "score" : total_score,
                 "valid_plan_count" : len(all_results),
                 "score_summary" : score_summary,
+                "score_details": report_score_details,
                 "weekly_schedule" : weekly_schedule,
             },
                 status = status.HTTP_201_CREATED,
@@ -499,6 +534,7 @@ class ScheduleDetailView(APIView) :
             "room_idle_penalty" : plan.room_idle_penalty,
             "surgeon_idle_penalty" : plan.surgeon_idle_penalty,
             "success_rate" : plan.success_rate,
+            "score_details" : plan.score_details,
 
 
             "items" : [{
