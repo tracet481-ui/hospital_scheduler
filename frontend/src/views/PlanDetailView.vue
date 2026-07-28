@@ -3,12 +3,20 @@ import { computed, onMounted, ref } from "vue"
 import { useRoute } from "vue-router"
 import { getPlanDetail } from "../services/scheduleApi"
 
+
+import { jsPDF } from "jspdf"
+import { autoTable } from "jspdf-autotable"
+
+
 const route = useRoute()
 
 const plan = ref(null)
 const loading = ref(false)
 const errorMessage = ref("")
 const recentPlansDialog = ref(false)
+
+
+const exportingPdf = ref(false)
 
 
 const days = [
@@ -239,6 +247,788 @@ const formatScore = (value) => {
 
 // --------------------------------------------------------- rapor ekranı 
 
+// export --------------------------------------------------------------
+
+
+const getRawValue = (report) => {
+
+    return Number(
+
+        report?.raw_value ??
+        report?.["raw value"] ??
+        0,
+
+    )
+
+}
+
+
+
+const formatPdfDate =  (value) =>{
+
+    if(!value) return "-"
+
+    const date = new Date(value)
+
+    if (Number.isNaN(date.getTime())) {
+
+        return String(value)
+
+    }
+
+    return new Intl.DateTimeFormat("tr-TR", {
+        
+        dateStyle: "long",
+
+        timeStyle: "short",
+
+    }).format(date)
+
+}
+
+
+const normalizePdfText = (value) => {
+
+    if (value === undefined || value === null) {
+
+    }
+
+    return String(value) 
+
+        .replaceAll("ı", "i")
+        .replaceAll("İ", "I")
+        .replaceAll("ş", "s")
+        .replaceAll("Ş", "S")
+        .replaceAll("ğ", "g")
+        .replaceAll("Ğ", "G")
+        .replaceAll("ü", "u")
+        .replaceAll("Ü", "u")
+        .replaceAll("ö", "o")
+        .replaceAll("Ö", "O")
+        .replaceAll("ç", "c")
+        .replaceAll("Ç", "C")    
+
+}
+
+
+const createPdfFileName = () => {
+
+    const planId = String(plan.value?.id ?? "plan")
+        .slice(0,8)
+
+    
+    return `ameliyat-planı-raporu-${planId}.pdf`
+
+
+}
+
+
+const addPdfSectionTitle = (doc, title, y) => {
+
+    const pageHeight = doc.internal.pageSize.getHeight()
+
+    if (y > pageHeight - 25 ){
+
+        doc.addPage()
+        y = 20
+
+    }
+
+
+    doc.setFontSize(14)
+    doc.setFont("helvetica", "bold")
+    doc.text(normalizePdfText(title), 14, y)
+
+
+    doc.setDrawColor( 210, 220, 235)
+    doc.line ( 14, y + 3 , 196, y + 3 )
+
+    return y + 10
+
+}
+
+
+// sayfa numarası -----------------------------------------------
+
+
+const addPdfPageNumbers = (doc) => {
+
+    const pageCount = doc.getNumberOfPages()
+
+    for ( let pageNumber = 1; pageNumber <= pageCount; pageNumber++ ) {
+
+        doc.setPage(pageNumber)
+
+
+        const pageWidth = doc.internal.pageSize.getWidth()
+        const pageHeight = doc.internal.pageSize.getHeight()
+
+
+        doc.setFontSize(8)
+        doc.setTextColor (120, 130, 145)
+
+        doc.text(
+
+            '${pageNumber} / ${pageCount}',
+            pageWidth - 14,
+            pageHeight - 8, 
+
+            {
+                align : "right",
+            },
+
+        )
+
+        doc.text (
+
+            "Hospital Scheduler",
+            14,
+            pageHeight - 8,
+
+        )
+
+    }
+
+
+    doc.setTextColor(0,0,0)
+
+
+}
+
+
+
+//  ----------------------------------------------- sayfa numarası
+
+
+
+
+const exportPlanPdf = async () => {
+
+    if(!plan.value || exportingPdf.value) {
+
+        return
+
+    }   
+
+
+    exportingPdf.value = true
+
+    try {
+
+        const doc = new jsPDF({
+
+            orientation: "portrait",
+            unit : "mm",
+            format : "a4",
+
+        })
+
+        const tableTheme = {
+
+            styles : {
+
+                font : "helvetica",
+                FontSize : 8,
+                cellPadding: 2.6,
+                overflow : "linebreak",
+                valign : "middle",
+
+            },
+
+            headStyles : {
+
+                fillColor : [30, 64, 175],
+                textColor : [255,255,255],
+                fontStyle : "bold",
+
+            },
+
+            alternateRowStyles : {
+
+                fllColor : [240, 250, 252,],    
+
+            },
+
+            margin : {
+
+                left : 14,
+                right : 14,
+            },
+
+        }
+
+
+        // pdf başlığı
+
+
+        doc.setFillColor (15, 23, 42)
+        doc.rect( 0, 0, 210, 42, "F")
+
+        doc.setTextColor (255, 255, 255)
+        doc.setFont ("helvetica", "bold")
+        doc.setFontSize(20)
+
+        doc.text(
+            "Hospital Scheduler",
+            14,
+            17,
+        )
+
+
+        doc.setFontSize(12)
+        doc.setFont("helvetica", "normal")
+
+        doc.text ( 
+            "Haftalık Ameliyat Plan Raporu",
+            14,
+            27,
+        )
+
+        doc.setFontSize(8)
+
+
+        doc.text(
+            `Olusturulma: ${normalizePdfText(
+                formatPdfDate(plan.value.created_at),
+            )}`,
+            14,
+            35,
+        )
+
+        doc.setTextColor( 15, 23, 42 )
+
+        // plan bilgileri 
+
+        let currentY = 52
+
+        currentY = addPdfSectionTitle(
+
+            doc,
+            "Plan Bilgileri",
+            currentY,
+
+        )
+
+
+        autoTable( doc, {
+
+            ...tableTheme,
+            startY : currentY,
+            theme : "grid",
+
+
+            head : [[
+
+                "Alan",
+                "Deger",
+
+            ]],
+
+
+            body : [
+                [
+                    "Plan ID",
+                    normalizePdfText(plan.value.id),
+                ],
+
+                [
+                    "Algoritma",
+                    normalizePdfText(plan.value.algorithm_name),
+                ],
+
+                [
+                    "Durum",
+                    plan.value.is_feasible
+                                ? "Geçerli plan"
+                                : "Geçersiz plan",
+                ],
+
+                [
+                    "Oluşturma tarihi",
+                    normalizePdfText(
+                                    formatPdfDate(plan.value.created_at),
+                    )
+                ],
+            ],
+
+
+            columnStyles : {
+
+                0: {
+                    cellWidth : 55,
+                    fontStyle : "bold",
+                },
+
+            },
+
+        })
+
+        currentY = doc.lastAutoTable.finalY + 10
+
+
+        // Genel PErformans
+
+
+        currentY =  addPdfSectionTitle (
+
+            doc,
+            "Genel Performans",
+            currentY,
+
+        )
+
+
+        autoTable ( doc, {
+
+            ...tableTheme,
+            startY : currentY,
+            theme : "grid",
+
+
+            head : [
+                [
+                    "Metrik",
+                    "Deger",
+                    "Aciklama",
+                ]
+            ],
+
+
+            body : [
+                [
+                    "Final Skor",
+                    formatScore(finalScore.value),
+                    "Öncelik puani eksi toplam kayip"
+                ],
+
+                [
+                    "Öncelik Puani",
+                    formatScore(priorityReport.value.score),
+                    `${priorityItems.value.length} operasyon`,
+                ],
+
+                [
+                    "Toplam Kayip",
+                    `-${formatScore(totalLoss.value)}`,
+                    "Soft constrait cezalari",
+                ],
+
+                [
+                    "Basari Orani",
+                    `%${formatPercentage(scorePercent.value)}`,
+                    "Plan performans göstergesi",
+                ],
+            ],
+
+        })
+
+
+        currentY = doc.lastAutoTable.finalY + 10
+
+
+        // Soft Constrait Özeti
+
+
+
+        currentY = addPdfSectionTitle(
+
+            doc,
+            "Soft Constrait Ozeti",
+            currentY,
+
+        )
+
+        autoTable ( doc, {
+
+            ...tableTheme,
+            startY : currentY,
+            theme : "grid",
+
+
+            head : [
+                [
+                    "Constrait",
+                    "Ham Deger",
+                    "Puan kaybi",
+                ]
+            ],
+
+
+            body : [
+                [
+                    "Gun dengesi",
+                    `${getRawValue(dayBalance.value)} slot`,
+                    `-${formatScore(dayBalance.value.loss)}`,
+
+                ],
+
+                [
+                    "Anestezi dengesi",
+                    `${getRawValue(anesthesiaBalance.value)} slot`,
+                    `-${formatScore(anesthesiaBalance.value.loss)}`,
+
+                ],
+
+                [
+                    "Oda bosluklari",
+                    `${getRawValue(roomIdle.value)} slot`,
+                    `-${formatScore(roomIdle.value.loss)}`,
+                ],
+
+                [
+                    "Cerrah bosluklari",
+                    `${getRawValue(surgeonIdle.value)} slot`,
+                    `-${formatScore(surgeonIdle.value.loss)}`,
+
+                ],
+
+            ],
+
+        })
+
+        currentY = doc.lastAutoTable.finalY + 10
+
+
+        // Gün YÜkleri
+
+
+        currentY = addPdfSectionTitle(
+
+            doc,
+            "Gun Yukleri",
+            currentY,
+
+        )
+
+
+        autoTable ( doc, {
+
+            ...tableTheme,
+            startY : currentY,
+            theme : "striped",
+
+
+            head : [
+                [
+                    "Gun",
+                    "Toplam yuk",
+                ]
+            ],
+
+            body : dailyLoads.value.map((item) => [
+
+                normalizePdfText(item.day),
+                `${item.load} slot`,
+
+            ]),
+
+        })
+
+
+        currentY = doc.lastAutoTable.finalY + 10,
+
+
+
+        // Anestezi Yükleri
+
+
+        currentY = addPdfSectionTitle(
+            doc,
+            "Anestezi Takim Yükleri",
+            currentY,
+        )
+
+
+        autoTable ( doc, {
+
+            ...tableTheme,
+            startY : currentY,
+            theme : "striped",
+
+
+
+            head : [
+                [
+                    "Takim",
+                    "Toplam Yuk",
+                ]
+            ],
+
+
+            body : anesthesiaLoads.value.map((item) => [
+
+                normalizePdfText(item.team),
+                `${item.load} slot`,
+
+            ]),
+
+        })
+
+
+
+        // Oda Boşlukları
+
+
+        doc.addPage()
+
+        currentY = addPdfSectionTitle(
+            doc,
+            "Oda Bosluklari",
+            20,
+        )
+
+
+        autoTable(doc, {
+
+            ...tableTheme,
+            startY : currentY,
+            theme : "striped",
+
+
+            head : [
+                [
+                    "Gun",
+                    "Oda",
+                    "Onceki hasta",
+                    "Sonraki hasta",
+                    "Bosluk",
+                ]
+            ],
+
+
+            body : roomIdleItems.value.length
+                ? roomIdleItems.value.map((gap) => [
+
+                    normalizePdfText(
+                        getDayName(gap.day_index),
+                    ),
+
+                    normalizePdfText(gap.room),
+                    normalizePdfText(gap.from_patient),
+                    normalizePdfText(gap.to_patient),
+                    `${gap.gap} slot`,
+                ])
+                :
+                [
+                    [
+                        "Oda boslugu bulunmuyor",
+                        "",
+                        "",
+                        "",
+                        "",
+                    ]
+                ],
+
+        })
+
+
+        // cerrah boslukları
+
+
+        currentY = doc.lastAutoTable.finalY + 10
+
+
+        currentY = addPdfSectionTitle(
+
+            doc,
+            "Cerrah Bosluklari",
+            currentY,
+
+        )
+
+        autoTable( doc, {
+
+                ...tableTheme,
+                startY : currentY,
+                theme : "striped",
+
+
+                head : [
+                    [
+                        "Gun",
+                        "Cerrah",
+                        "Onceki hasta",
+                        "Sonraki hasta",
+                        "Bosluk",
+                    ]
+                ],
+
+                body : surgeonIdleItems.value.length
+                    ? surgeonIdleItems.value.map((gap) => [
+
+                        normalizePdfText(
+                            getDayName(gap.day_index),
+                        ),
+
+                        normalizePdfText(gap.surgeon),
+                        normalizePdfText(gap.from_patient),
+                        normalizePdfText(gap.to_patient),
+                        `${gap.gap} slot`,
+
+                    ])
+                    :
+                    [
+                        [
+                            "Cerrah boslugu  bulunmuyor",
+                            "",
+                            "",
+                            "",
+                            "",
+                        ]
+                    ],
+
+        }),
+
+
+         /*
+         * ÖNCELİK RAPORU
+         */
+
+        doc.addPage()
+
+        currentY = addPdfSectionTitle(
+            doc,
+            "Operasyon Oncelik Puanlari",
+            20,
+        )
+
+        autoTable(doc, {
+            ...tableTheme,
+            startY: currentY,
+            theme: "striped",
+
+            head: [[
+                "Hasta",
+                "Operasyon",
+                "Oncelik",
+                "Gun",
+                "Baslangic",
+                "Puan",
+            ]],
+
+            body: priorityItems.value.map((item) => [
+                normalizePdfText(item.patient),
+                normalizePdfText(item.operation),
+                normalizePdfText(item.priority),
+                normalizePdfText(
+                    getDayName(item.day_index),
+                ),
+                String(item.start_slot ?? "-"),
+                formatScore(item.score),
+            ]),
+
+            columnStyles: {
+                0: {
+                    cellWidth: 18,
+                },
+                1: {
+                    cellWidth: 50,
+                },
+                2: {
+                    cellWidth: 24,
+                },
+                3: {
+                    cellWidth: 25,
+                },
+                4: {
+                    cellWidth: 22,
+                },
+                5: {
+                    cellWidth: 24,
+                    halign: "right",
+                },
+            },
+        })
+
+        /*
+         * HAFTALIK AMELİYAT PLANI
+         */
+
+        doc.addPage()
+
+        currentY = addPdfSectionTitle(
+            doc,
+            "Haftalik Ameliyat Plani",
+            20,
+        )
+
+        autoTable(doc, {
+            ...tableTheme,
+            startY: currentY,
+            theme: "striped",
+
+            head: [[
+                "Gun",
+                "Saat",
+                "Hasta",
+                "Operasyon",
+                "Cerrah",
+                "Oda",
+                "Anestezi",
+            ]],
+
+            body: Array.isArray(plan.value.items)
+                ? plan.value.items.map((item) => [
+                    normalizePdfText(
+                        getDayName(item.day_index),
+                    ),
+                    `${normalizePdfText(item.start_time)} - ${normalizePdfText(
+                        item.end_time,
+                    )}`,
+                    normalizePdfText(item.patient),
+                    normalizePdfText(item.operation),
+                    normalizePdfText(item.surgeon),
+                    normalizePdfText(item.room),
+                    normalizePdfText(item.anesthesia_team),
+                ])
+                : [],
+
+            styles: {
+                ...tableTheme.styles,
+                fontSize: 7,
+            },
+
+            columnStyles: {
+                0: {
+                    cellWidth: 22,
+                },
+                1: {
+                    cellWidth: 27,
+                },
+                2: {
+                    cellWidth: 15,
+                },
+                3: {
+                    cellWidth: 43,
+                },
+                4: {
+                    cellWidth: 30,
+                },
+                5: {
+                    cellWidth: 17,
+                },
+                6: {
+                    cellWidth: 25,
+                },
+            },
+        })
+
+        addPdfPageNumbers(doc)
+
+        doc.save(createPdfFileName())
+    } catch (error) {
+        console.error("PDF export error:", error)
+        errorMessage.value =
+            "PDF oluşturulurken bir hata oluştu."
+    } finally {
+        exportingPdf.value = false
+    }
+}
+
+
+
+
+//  -------------------------------------------------------------- export
 
 
 
@@ -332,14 +1122,42 @@ onMounted(loadPlanDetail)
                     Son 10 Plan
 
                 </button>
+                
+                <p></p>
 
+
+                    <button
+                        type="button"
+                        class="export-button"
+                        :disabled="!plan || loading || exportingPdf"
+                        @click="exportPlanPdf"
+                    >
+                        <span class="export-icon">
+                            ↓
+                        </span>
+
+                        {{
+                            exportingPdf
+                                ? "PDF Hazırlanıyor..."
+                                : "PDF Olarak Dışa Aktar"
+                        }}
+                    </button>
+
+                <!-- <button
+                        class = "export-button">
+
+                    Pdf olarak dışa aktar
+
+
+                </button> -->
+<!-- 
                 <button
                         class = "secondary-button"
                         @click = "reportDialog = true">
 
                     Raporlar
 
-                </button>
+                </button>   -->
 
             </div>
         </div>
@@ -1726,6 +2544,102 @@ rapor ekran css ---------------------------------------------------- */
     .section-heading {
         align-items: flex-start;
         flex-direction: column;
+    }
+}
+
+
+
+.detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.export-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 42px;
+    padding: 10px 17px;
+    border: 0;
+    border-radius: 11px;
+    background: #1d4ed8;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(29, 78, 216, 0.2);
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.export-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: #1e40af;
+    box-shadow: 0 11px 24px rgba(29, 78, 216, 0.26);
+}
+
+.export-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.export-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+}
+
+.export-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 16px;
+    line-height: 1;
+}
+
+.secondary-button {
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 42px;
+    padding: 10px 17px;
+    border: 0;
+    border-radius: 11px;
+    background: #1d4ed8;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(29, 78, 216, 0.2);
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+
+}
+
+@media (max-width: 640px) {
+    .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .detail-actions {
+        width: 100%;
+    }
+
+    .export-button {
+        flex: 1;
     }
 }
 
