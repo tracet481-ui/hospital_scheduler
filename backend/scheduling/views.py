@@ -630,31 +630,31 @@ class LatestScheduleView(APIView) :
 #     serializer_class = SurgeryTypeSerializer
 
 
-class SurgeryRequestListCreateView (ListCreateAPIView) :
+# class SurgeryRequestListCreateView (ListCreateAPIView) :
 
-    queryset = (
+#     queryset = (
 
-        SurgeryRequest.objects
-        .select_related(
+#         SurgeryRequest.objects
+#         .select_related(
 
-            "patient",
-            "surgery_type",
-            "surgery_type__required_specialty",
+#             "patient",
+#             "surgery_type",
+#             "surgery_type__required_specialty",
 
-        )
-        .order_by ("-created_at")
+#         )
+#         .order_by ("-created_at")
 
-    )
+#     )
 
-    serializer_class = SurgeryRequestSerializer
+#     serializer_class = SurgeryRequestSerializer
 
 
 ## Hasta listesi --------------------------
 
-class PatientlistView (ListAPIView) :
+# class PatientlistView (ListAPIView) :
 
-    queryset = Patient.objects.all().order_by ("code")
-    serializer_class = PatientSerializer
+#     queryset = Patient.objects.all().order_by ("code")
+#     serializer_class = PatientSerializer
 
 
 
@@ -664,16 +664,16 @@ class PatientlistView (ListAPIView) :
 
 ##  operasyon tipleri  --------------------------------
 
-class SurgeryTypeListView(ListAPIView) :
+# class SurgeryTypeListView(ListAPIView) :
 
-    queryset = (
+#     queryset = (
 
-        SurgeryType.objects.all()
-        .order_by("name")
+#         SurgeryType.objects.all()
+#         .order_by("name")
 
-    )
+#     )
 
-    serializer_class = SurgeryTypeSerializer
+#     serializer_class = SurgeryTypeSerializer
 
 
 ##  -------------------------------- operasyon tipleri  
@@ -691,6 +691,8 @@ class SurgeryRequestListCreateView(ListCreateAPIView):
             "patient",
             "surgery_type",
             "surgery_type__required_specialty",
+            "required_specialty",
+
         )
         .order_by("-created_at")
     )

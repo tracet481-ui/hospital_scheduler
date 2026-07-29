@@ -94,27 +94,87 @@ class Patient ( BaseModel ) :
         return self.code
     
 
-class SurgeryType (BaseModel) :
-    name = models.CharField (max_length= 100, )
-    required_specialty = models. ForeignKey(
-        Specialty,
-        on_delete= models.PROTECT,
-        related_name = "surgery_types",
+# class SurgeryType (BaseModel) :
+#     name = models.CharField (max_length= 100, )
+
+#     PRIOROTY_CHOICES = [
+
+#         ("critical", "Kritik"),
+#         ("high", "Yüksek"),
+#         ("medium", "Orta"),
+#         ("low", "Düşük"),
+
+#     ]
+
+
+#     required_specialty = models. ForeignKey(
+#         Specialty,
+#         on_delete= models.PROTECT,
+#         related_name = "surgery_types",
         
+#     )
+
+#     duration_slots = models.PositiveIntegerField()
+ 
+
+#     priority = models.CharField(
+
+#         max_length = 20,
+#         choices = PRIOROTY_CHOICES,
+#         default= "medium",
+
+#     )
+
+
+#     compatible_rooms = models.ManyToManyField(
+#         OperatingRoom,
+#         related_name = "compatible_surgery_types",
+#         blank = True,
+
+#     )
+
+#     def __str__ (self) :
+#         return self.name
+    
+
+class SurgeryType(BaseModel):
+
+    PRIORITY_CHOICES = [
+        ("critical", "Kritik"),
+        ("high", "Yüksek"),
+        ("medium", "Orta"),
+        ("low", "Düşük"),
+    ]
+
+    name = models.CharField(
+        max_length=100,
+    )
+
+    required_specialty = models.ForeignKey(
+        Specialty,
+        on_delete=models.PROTECT,
+        related_name="surgery_types",
     )
 
     duration_slots = models.PositiveIntegerField()
 
-    compatible_rooms = models.ManyToManyField(
-        OperatingRoom,
-        related_name = "compatible_surgery_types",
-        blank = True,
-
+    priority = models.CharField(
+        max_length=20,
+        choices=PRIORITY_CHOICES,
+        default="medium",
     )
 
-    def __str__ (self) :
+    compatible_rooms = models.ManyToManyField(
+        OperatingRoom,
+        related_name="compatible_surgery_types",
+        blank=True,
+    )
+
+    def __str__(self):
         return self.name
-    
+
+
+
 
 class SurgeryRequest ( BaseModel ):
     PRIORITY_CHOICES = [
@@ -152,13 +212,13 @@ class SchedulePlan(BaseModel):
     ]
 
     ## score sayfası --------
-    id = models.UUIDField(
+    # id = models.UUIDField(
 
-        primary_key = True,
-        default = uuid.uuid4,
-        editable = False,
+    #     primary_key = True,
+    #     default = uuid.uuid4,
+    #     editable = False,
 
-    )
+    # )
 
     
     ## --------   score sayfası 

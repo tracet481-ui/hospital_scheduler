@@ -4,18 +4,18 @@
 
     import { 
         
-        getPatients,
+        // getPatients,
         getSurgeryTypes,
         getSurgeryRequest,
 
-        type PatientOption,
+        // type PatientOption,
         type SurgeryTypeOption,
         type SurgeryRequestPayload,
         createSurgeryRequest,
         } from "../services/scheduleApi"
     
     
-    const patients = ref<PatientOption[]>([])
+    // const patients = ref<PatientOption[]>([])
 
     const surgeryTypes = ref<SurgeryTypeOption[]>([])
 
@@ -27,46 +27,53 @@
 
 
     
-    const form = ref<SurgeryRequestPayload>({
+    // const form = ref<SurgeryRequestPayload>({
 
-        patient : "" ,
-        surgery_type : "" ,
-        priority : "medium" ,
+    //     patient : "" ,
+    //     surgery_type : "" ,
+    //     priority : "medium" ,
 
-    })
+    // })
+
+    const form = ref({
+
+    patient_code: "",
+    surgery_type: "",
+
+})
 
 
-    const priorityOptions = [
+    // const priorityOptions = [
 
-        {
+    //     {
 
-            title : "Kritik",
-            value : "critical",
+    //         title : "Kritik",
+    //         value : "critical",
 
-        },
+    //     },
 
-        {
+    //     {
 
-            title : "Yüksek",
-            value : "high",
+    //         title : "Yüksek",
+    //         value : "high",
 
-        },
+    //     },
 
-        {
+    //     {
 
-            title : "Orta",
-            value : "medium",
+    //         title : "Orta",
+    //         value : "medium",
 
-        },
+    //     },
 
-        {
+    //     {
 
-            title : "Düşük",
-            value : "low",
+    //         title : "Düşük",
+    //         value : "low",
 
-        },
+    //     },
 
-    ]
+    // ]
 
 
     const selectedOperation = computed (() => {
@@ -86,11 +93,15 @@
 
         try {
 
-            const patientResponse = await getPatients()
+            // const patientResponse = await getPatients()
 
-            const surgeryResponse = await getSurgeryTypes ()
+            // const surgeryResponse = await getSurgeryTypes ()
 
-            patients.value = patientResponse.data
+            // patients.value = patientResponse.data
+
+            // surgeryTypes.value = surgeryResponse.data
+
+            const surgeryResponse = await getSurgeryTypes()
 
             surgeryTypes.value = surgeryResponse.data
 
@@ -124,7 +135,10 @@
 
 
 
-        if (! form.value.patient || !form.value.surgery_type) {
+        // if (! form.value.patient || !form.value.surgery_type) {
+       
+        
+        if (!form.value.patient_code || !form.value.surgery_type) {
 
             errorMessage.value = "Hasta ve operasyon türü seçilmelidir..."
             return
@@ -138,11 +152,16 @@
 
             successMessage.value = "Ameliyat talebi başarıyla oluşturuldu."
 
+            // form.value = {
+            //     patient: "",
+            //     surgery_type: "",
+            //     priority: "medium",
+            // }
+
             form.value = {
-                patient: "",
-                surgery_type: "",
-                priority: "medium",
-            }
+            patient_code: "",
+            surgery_type: "",
+        }
 
         }
 
@@ -343,12 +362,19 @@
       >
 
         <div class="form-group">
+<!-- 
+---------------------------
+
 
           <label for="patient">
             Hasta
           </label>
 
-          <select
+------------------------------ -->
+
+
+
+          <!-- <select
             id="patient"
             v-model="form.patient"
             :disabled="loading"
@@ -365,7 +391,23 @@
             >
                 {{ patient.code }}
             </option>
-          </select>
+          </select> -->
+
+<!-- 
+          ----------------------------------------------- -->
+
+          <label for="patient-code">
+              Hasta Kodu
+          </label>
+
+          <input
+              id="patient-code"
+              v-model.trim="form.patient_code"
+              type="text"
+              placeholder="Örn: P52"
+              :disabled="loading"
+              required
+          />
 
         </div>
 
@@ -400,7 +442,10 @@
 
         <div class="form-group">
 
-          <label for="priority">
+<!-- 
+---------------------------------------------------- -->
+
+          <!-- <label for="priority">
             Öncelik
           </label>
 
@@ -419,7 +464,9 @@
               {{ priority.title }}
             </option>
 
-          </select>
+          </select> -->
+<!-- 
+          ---------------------------------------------------- -->
 
         </div>
 
@@ -443,6 +490,20 @@
 
               <strong>
                 {{ selectedOperation.name }}
+              </strong>
+
+            </div>
+
+
+            <div class = "info-item" >
+
+
+              <span class="info-label">
+                  Öncelik
+              </span>
+
+              <strong>
+                  {{ selectedOperation.priority_display }}
               </strong>
 
             </div>
@@ -504,9 +565,9 @@
             type="submit"
             class="save-button"
             :disabled="
-              loading ||
-              !form.patient ||
-              !form.surgery_type
+            loading ||
+            !form.patient_code ||
+            !form.surgery_type
             "
           >
 

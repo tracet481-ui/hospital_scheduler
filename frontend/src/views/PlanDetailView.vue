@@ -479,7 +479,7 @@ const exportPlanPdf = async () => {
         doc.setFont("helvetica", "normal")
 
         doc.text ( 
-            "Haftalık Ameliyat Plan Raporu",
+            "Haftalik Ameliyat Plan Raporu",
             14,
             27,
         )

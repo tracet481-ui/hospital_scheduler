@@ -41,11 +41,11 @@ export const getLatestPlan = () => {
 
 
 
-export const getPatients = () =>  {
+// export const getPatients = () =>  {
 
-    return api.get<PatientOption[]>("/patients/")
+//     return api.get<PatientOption[]>("/patients/")
 
-}
+// }
 
 
 export const getSurgeryTypes = () => {
@@ -73,13 +73,22 @@ export const createSurgeryRequest = (data: SurgeryRequestPayload) => {
     // operasyon ekleme ----------------------------------   
 
 
-export interface PatientOption {
+// export interface PatientOption {
 
-    id : string
-    code : string
+//     id : string
+//     code : string
 
-}
+// }
 
+
+// export interface SurgeryTypeOption {
+
+//     id : string
+//     name : string
+//     duration_slots : number
+//     specialty_name : string
+
+// }
 
 export interface SurgeryTypeOption {
 
@@ -87,6 +96,9 @@ export interface SurgeryTypeOption {
     name : string
     duration_slots : number
     specialty_name : string
+
+    priority : SurgeryPriority
+    priority_display : string
 
 }
 
@@ -99,26 +111,49 @@ export type SurgeryPriority =
     |   "low"
 
 
+// export interface SurgeryRequestPayload {
+
+//     patient : string
+//     surgery_type : string
+//     priority : SurgeryPriority 
+
+// }
+
+
 export interface SurgeryRequestPayload {
 
-    patient : string
+    patient_code : string
     surgery_type : string
-    priority : SurgeryPriority 
 
 }
+
+
+// export interface SurgeryRequestResponse {
+
+//     id : string
+
+//     patient : string
+//     patient_name : string
+
+//     surgery_type : string
+//     surgery_name : string
+
+//     priority : string
+
+// }
 
 
 export interface SurgeryRequestResponse {
 
     id : string
 
-    patient : string
     patient_name : string
 
     surgery_type : string
     surgery_name : string
 
-    priority : string
+    priority : SurgeryPriority
+    priority_display : string
 
 }
 
