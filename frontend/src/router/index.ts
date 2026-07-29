@@ -100,62 +100,6 @@ const router = createRouter({
 
 
 
-
-              // {
-              //   path: "/schedule",
-              //   name: "schedule",
-              //   component: ScheduleView,
-              //   meta: {
-              //     requiresAuth: true,
-              //     title: "Plan Oluştur",
-              //   },
-              // },
-              // {
-              //   path: "/doctor",
-              //   name: "doctor",
-              //   component: DoctorScheduleView,
-              //   meta: {
-              //     requiresAuth: true,
-              //     title: "Doktor Takvimleri",
-              //   },
-              // },
-              // {
-              //   path: "/plans",
-              //   name: "plans",
-              //   component: PlanListView,
-              //   meta: {
-              //     requiresAuth: true,
-              //     title: "Kayıtlı Planlar",
-              //   },
-              // },
-              // {
-              //   path: "/operations",
-              //   name: "operations",
-              //   component: OperationManagementView,
-              //   meta: {
-              //     requiresAuth: true,
-              //     title: "Operasyon Yönetimi",
-              //   },
-              // },
-
-
-            // {
-
-            //   path : "/operations",
-            //   name : "operations",
-            //   component : OperationManagementView,
-
-            // },
-
-
-            // {
-
-            //   path : "/operations/new",
-            //   name : "operation-create",
-            //   component : SurgeryRequestCreateView,
-
-            // },
-
           ],
 
         }
@@ -188,14 +132,6 @@ router.beforeEach ((to) => {
 export default router
 
 
-
-
-// const router = createRouter({
-//   history: createWebHistory(import.meta.env.BASE_URL),
-//   routes, // <-- Burada oluşturduğun diziyi kullan
-// });
-
-// export default router;
 
 
 

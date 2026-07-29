@@ -99,16 +99,7 @@ def can_place_surgery(
     ):
         return False
 
-    # if not surgeon_has_required_rest(
-
-    #     surgeon_occupancy,
-    #     surgeon.name ,
-    #     start_slot,
-    #     surgery.duration,
-
-    # ) :
-
-    #     return False
+# --------------------------------------------------- surgeon rest
 
     if not surgeon_has_required_rest(
         surgeon_occupancy,
@@ -117,6 +108,10 @@ def can_place_surgery(
     ):
 
         return False
+
+
+# surgeon rest   --------------------------------------------------- 
+
 
     if not slots_are_free(
         anesthesia_occupancy, anesthesia_team.name, start_slot, surgery.duration

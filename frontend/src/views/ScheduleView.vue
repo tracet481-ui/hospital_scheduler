@@ -50,9 +50,8 @@ const handleLogout = () => {
                 <p>Haftalık ameliyathane planı üret</p>
             </div>
 
-            <!-- <button class="logout-button" @click="handleLogout">
-                Çıkış Yap
-            </button> -->
+        
+            
         </header>
 
         <section class="action-card">
@@ -78,112 +77,6 @@ const handleLogout = () => {
                 <strong>{{ scheduleResult.plan_id }}</strong>
             </p>
 
-            <!-- <pre>{{ scheduleResult }}</pre> -->
-
-
-            <!-- <section v-if = "scheduleResult" class ="result-card">
-
-                <h2>Plan Oluşturuldu</h2>
-
-
-                <div class =" summary-grid ">
-
-                    <div class= "summary-box">
-
-                        <span>
-
-                            Skor
-
-                        </span>
-
-                        <strong>
-
-                            {{ scheduleResult.score }}
-
-                        </strong>
-
-                    </div>
-
-
-                    <div class="summary-box">
-    
-                        <span>Plan ID</span>
-    
-                        <strong>{{ scheduleResult.plan_id }}</strong>
-
-                    </div>
-
-
-
-                    <div class = "summary-box" >
-
-                        <span>Durum</span>
-
-                            <strong>
-
-                                {{ scheduleResult.success ? "Başarılı" : "Başarısız" }}
-
-                            </strong>
-
-                    </div>
-
-                </div>
-
-                <h3>
-
-                    Oluşturulan Plan:
-
-                </h3>    
-
-
-                <table class =" schedule-table ">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>#</th>
-                            <th>Gün</th>
-                            <th>Başlangıç</th>
-                            <th>Bitiş</th>
-                            <th>Hasta</th>
-                            <th>Ameliyat</th>
-                            <th>Doktor</th>
-                            <th>Oda</th>
-                            <th>Anestezi</th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        <template
-                            v-for="day in scheduleResult.weekly_schedule"
-                            :key="day.day_index"
-                        >
-                            <tr
-                                v-for="(item, index) in day.items"
-                                :key="`${day.day_index}-${index}`"
-                            >
-                                <td>{{ index + 1 }}</td>
-                                <td>{{ day.day_name }}</td>
-                                <td>{{ item.start_time }}</td>
-                                <td>{{ item.end_time }}</td>
-                                <td>{{ item.patient }}</td>
-                                <td>{{ item.operation }}</td>
-                                <td>{{ item.surgeon }}</td>
-                                <td>{{ item.room }}</td>
-                                <td>{{ item.anesthesia_team }}</td>
-                            </tr>
-                        </template>
-
-                    </tbody>
-
-                </table>
-
-            </section> -->
 
 
             <section 
@@ -349,29 +242,7 @@ pre {
     color: #0f172a;
 }
 
-/* .schedule-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 16px;
-    font-size: 14px;
-}
 
-.schedule-table th,
-.schedule-table td {
-    border: 1px solid #e2e8f0;
-    padding: 10px 12px;
-    text-align: left;
-}
-
-.schedule-table th {
-    background: #f1f5f9;
-    color: #334155;
-    font-weight: 600;
-}
-
-.schedule-table tr:nth-child(even) {
-    background: #f8fafc; */
-/* } */
 
 .day-card{
     background:white;

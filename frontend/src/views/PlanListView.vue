@@ -15,44 +15,55 @@ const errorMessage = ref("")
 
 const currentPage = ref(1)
 
-const pageSize = 20
+
+
+const pageSize = ref(20)
+
+const pageSizeOptions = [20, 50, 100, 200]
 
 
 
-const totalPages = computed (() => {
+const totalPages = computed(() => {
 
     return Math.max(
-            1,
-            Math.ceil(plans.value.length / pageSize)
-        )
-
-})
-
-const paginatedPlans = computed (() => {
-
-    const startIndex = (currentPage.value - 1) * pageSize
-    const endIndex = startIndex + pageSize
-
-
-    return plans.value.slice (startIndex,   endIndex) 
+        1,
+        Math.ceil(plans.value.length / pageSize.value)
+    )
 
 })
 
 
-const firstVisibleRecord = computed (() => {
+
+
+const paginatedPlans = computed(() => {
+
+    const startIndex = (currentPage.value - 1) * pageSize.value
+    const endIndex = startIndex + pageSize.value
+
+    return plans.value.slice(startIndex, endIndex)
+
+})
+
+
+
+
+
+const firstVisibleRecord = computed(() => {
 
     if (plans.value.length === 0) return 0
 
-    return (currentPage.value - 1) * pageSize + 1
+    return (currentPage.value - 1) * pageSize.value + 1
 
 })
 
 
-const lastVisibleRecord = computed  (() => {
+
+
+const lastVisibleRecord = computed(() => {
 
     return Math.min(
 
-        currentPage.value * pageSize,
+        currentPage.value * pageSize.value,
 
         plans.value.length
 
@@ -62,15 +73,9 @@ const lastVisibleRecord = computed  (() => {
 
 
 
-const changePage = (page) => {
+const changePageSize = () => {
 
-    if (page < 1    ||      page > totalPages.value) {
-
-        return
-
-    }
-
-    currentPage.value = page
+    currentPage.value = 1
 
 }
 
@@ -181,66 +186,33 @@ onMounted(loadPlans)
                 </tbody>
             </table>
 
-            <div
-                v-if ="!loading && plans.length"
-                class = "patination-wrapper"    >
             
-                <p
-                    class = "pagination-info">
-                
-                    {{ plans.length }} kayıttan
 
-                    {{ firstVisibleRecord }} - {{ lastVisibleRecord }}
-
-                    arası gösteriliyor
-                
-                </p>
+            <div class="page-size">
 
 
-                <div
-                    v-if = "totalPages" 
-                    class = "pagination">
-                
-                    <button
-                        class = "pagination-button"
-                        :disabled = "currentPage === 1"
-                        @click = "changePage ( currentPage - 1 )">
-                    
-                        <i
-                            class="mdi mdi-chevron-left"></i>
-                    
-                    </button>
+                <label for="page-size">
+                    Sayfa başına
+                </label>
 
+                <select
+                    id="page-size"
+                    v-model.number="pageSize"
+                    @change="changePageSize"
+                >
 
-                    <button
-                            v-for = "page in totalPages"
-                            :key = "page"
-                            class = "pagination-button"
-                            :class = "{
+                    <option
+                        v-for="size in pageSizeOptions"
+                        :key="size"
+                        :value="size"
+                    >
+                        {{ size }}
+                    </option>
 
-                                active : currentPage === page
+                </select>
 
-                            }"
+                <span>kayıt</span>
 
-                            @click = "changePage(page)"     >
-                        
-                            {{ page }}
-                        
-                    </button>
-
-
-                    <button
-                                class = "pagination-button"
-                                :disabled = "currentPage === totalPages"
-                                @click = "changePage(currentPage + 1)">
-                            
-                        <i
-                                class = "mdi mdi-chevron-right"></i>    
-                        
-                    </button>
-
-                </div>
-                        
             </div>
 
 

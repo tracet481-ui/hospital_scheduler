@@ -11,12 +11,17 @@ import { autoTable } from "jspdf-autotable"
 const route = useRoute()
 
 const plan = ref(null)
-const loading = ref(false)
 const errorMessage = ref("")
+const loading = ref(false)
 const recentPlansDialog = ref(false)
 
 
 const exportingPdf = ref(false)
+
+
+
+
+
 
 
 const days = [
@@ -369,7 +374,7 @@ const addPdfPageNumbers = (doc) => {
 
         doc.text(
 
-            '${pageNumber} / ${pageCount}',
+            `${pageNumber} / ${pageCount}`,
             pageWidth - 14,
             pageHeight - 8, 
 
@@ -1143,22 +1148,6 @@ onMounted(loadPlanDetail)
                         }}
                     </button>
 
-                <!-- <button
-                        class = "export-button">
-
-                    Pdf olarak dışa aktar
-
-
-                </button> -->
-<!-- 
-                <button
-                        class = "secondary-button"
-                        @click = "reportDialog = true">
-
-                    Raporlar
-
-                </button>   -->
-
             </div>
         </div>
 
@@ -1842,55 +1831,7 @@ onMounted(loadPlanDetail)
 
         </Teleport>
 
-
-
-        <!-- <v-dialog
-            v-model="recentPlansDialog"
-            max-width="420"
-        >
-            <div class="recent-plans-dialog">
-                <div class="dialog-header">
-                    <h2>Son 10 Plan</h2>
-
-                    <button
-                        type="button"
-                        class="dialog-close-button"
-                        aria-label="Pencereyi kapat"
-                        @click="recentPlansDialog = false"
-                    >
-                        ×
-                    </button>
-                </div>
-
-                <div
-                    v-if="recentPlanPercentages.length"
-                    class="recent-plan-list"
-                >
-                    <div
-                        v-for="result in recentPlanPercentages"
-                        :key="result.key"
-                        class="recent-plan-row"
-                        :class="{ selected: result.isSelected }"
-                    >
-                        <strong>
-                            %{{ formatPercentage(result.percentage) }}
-                        </strong>
-
-                        <span
-                            v-if="result.isSelected"
-                            class="selected-marker"
-                        >
-                            <span class="selected-check">✓</span>
-                            Seçili
-                        </span>
-                    </div>
-                </div>
-
-                <p v-else class="empty-result">
-                    Simülasyon sonucu bulunamadı.
-                </p>
-            </div>
-        </v-dialog> -->
+        
     </main>
 </template>
 

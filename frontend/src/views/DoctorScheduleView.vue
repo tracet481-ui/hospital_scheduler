@@ -195,7 +195,6 @@
             return {
                 slot,
                 appointment,
-                // isBreak: slot === "12:00" || slot === "12:30",
             }
         })
     })
@@ -288,14 +287,11 @@
                         :class="{
                             filled: row.appointment,
                             done: row.appointment?.status === 'Tamamlandı',
-                            // breakrow: row.isBreak
                         }"
                     >
                         <td class="time-cell">{{ row.slot }}</td>
 
-                        <!-- <template v-if="row.isBreak">
-                            <td colspan="6" class="break-cell">MOLA</td>
-                        </template> -->
+            
 
                         <template v-if="row.appointment">
                             <td>{{ row.appointment.patient }}</td>

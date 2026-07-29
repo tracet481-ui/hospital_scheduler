@@ -69,12 +69,7 @@ class SimulationEngine:
                 surgeries=self.surgeries,
             )
 
-            # report_score_details = build_score_details(
-            #     score=score,
-            #     details=score_details,
-            # )
-
-
+# score details ----------------------------------------
 
 
             valid_count += 1
@@ -94,38 +89,11 @@ class SimulationEngine:
                 best_schedule = schedule
                 best_details = details
 
-            # print(
-            #     f"Geçerli plan bulundu. "
-            #     f"Valid {valid_count}/{valid_plan_target} | "
-            #     f"Score = {score}"
-            # )
-
-        # print("\nSIMULATION FINISHED")
-        # print("===================")
-        # print("Attempts:", attempt)
-        # print("Valid plans:", valid_count)
-        # print("Best Score:", best_score)
-
-        # if all_results:
-        #     print(
-        #         "Max All Results:",
-        #         max(result["score"] for result in all_results)
-        #     )
-
-        # score, details = calculate_schedule_score(schedule, surgeries)
-
-        # score_details = build_score_details(score, details)
 
         report_score_details = build_score_details(
             score=best_score,
             details=best_details,
         )
-
-        # from pprint import pprint
-
-        # print("\n========== SCORE DETAILS ==========\n")
-
-        # pprint(score_details, width=120)
 
 
         from pprint import pprint

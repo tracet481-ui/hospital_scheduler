@@ -70,21 +70,7 @@ const logout = () => {
         </RouterLink>
 
 
-        <!-- <RouterLink
-          v-for="item in menuItems"
-          :key="item.route"
-          :to="item.route"
-          class="sidebar-item"
-          :title="item.title"
-        >
-          <span class="item-icon">
-            <i :class="['mdi', item.icon]"></i>
-          </span>
 
-          <span class="item-title">
-            {{ item.title }}
-          </span>
-        </RouterLink> -->
       </nav>
     </div>
 
@@ -297,25 +283,6 @@ const logout = () => {
   font-size: 23px;
 }
 
-/* .item-title {
-  min-width: 160px;
-
-  font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
-
-  opacity: 0;
-  transform: translateX(-8px);
-
-  transition:
-    opacity 150ms ease,
-    transform 180ms ease;
-} */
-
-/* .app-sidebar:hover .item-title {
-  opacity: 1;
-  transform: translateX(0);
-} */
 
 .logout-item {
   color: #0a0000;

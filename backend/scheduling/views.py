@@ -267,44 +267,6 @@ class GenerateScheduleView(APIView) :
             len(best_schedule) if best_schedule else 0
         )
 
-        
-        
-        ## ----------------------------  score check 
-
-
-
-        # if best_schedule is None :
-
-        #     return Response (
-
-        #         {"Error" : "Geçerli schedule bulunamadı!"},
-        #         status = status.HTTP_400_BAD_REQUEST,
-
-        #     )
-
-
-        ## violations denetimi
-
-        # rest_violations =  validate_surgeon_rest_rule(best_schedule)
-
-
-        # if rest_violations :
-
-        #     return Response ({
-
-        #         "error" : "Best plan rest violation içeriyor!",
-        #         "violations" : rest_violations,
-
-        #         },
-        #         status = status.HTTP_400_BAD_REQUEST,
-        #     )
-
-        # total_score, score_details = calculate_schedule_score(
-
-        #     schedule = best_schedule,
-        #     surgeries = surgeries,
-
-        # )
 
         ##  score check ----------------------------
 
@@ -316,37 +278,6 @@ class GenerateScheduleView(APIView) :
 
         
         ##  score check ----------------------------
-
-
-
-
-
-
-        # score_summary = next (
-
-        #     detail
-        #     for detail in score_details
-        #     if detail["type"] == "score_summary"
-
-        # )
-
-
-        # success_rate = min (
-
-        #     100,
-        #     max(0, int(total_score / 1300)),
-
-        # )
-
-        # score_summary["success_rate"] = success_rate
-
-
-
-
-
-        ## ----------------------------  score check 
-
-
 
 
         weekly_schedule = []
@@ -381,18 +312,6 @@ class GenerateScheduleView(APIView) :
                     for item in day_items
                 ],
             })
-
-
-        # plan = save_schedule_plan (
-
-        #         schedule = best_schedule,
-        #         algorithm_name = "cp",
-        #         planning_day = "Haftalık Plan",
-        #         score = total_score,
-        #         score_details = score_summary,
-        #         simulation_results = simulation_results,
-        #         # success_rate = score_details.get("success_rate",0),
-        # )
 
 
         plan = save_schedule_plan(
@@ -466,19 +385,7 @@ class GenerateScheduleView(APIView) :
         # return Response ({
 
         #     "message" : "Schedule generate endpoint çalışıyor"
-
-
-
-
         # })
-
-
-
-
-
-
-
-
 
 class SchedulePlanListView(APIView) :
 
@@ -621,65 +528,6 @@ class LatestScheduleView(APIView) :
     
 
 ##  operasyon ekleme    ------------------------------------
-
-
-# class SurgeryTypeListCreateView (ListCreateAPIView) :
-
-#     queryset = SurgeryType.objects.all().order_by("name")
-
-#     serializer_class = SurgeryTypeSerializer
-
-
-# class SurgeryRequestListCreateView (ListCreateAPIView) :
-
-#     queryset = (
-
-#         SurgeryRequest.objects
-#         .select_related(
-
-#             "patient",
-#             "surgery_type",
-#             "surgery_type__required_specialty",
-
-#         )
-#         .order_by ("-created_at")
-
-#     )
-
-#     serializer_class = SurgeryRequestSerializer
-
-
-## Hasta listesi --------------------------
-
-# class PatientlistView (ListAPIView) :
-
-#     queryset = Patient.objects.all().order_by ("code")
-#     serializer_class = PatientSerializer
-
-
-
-## -------------------------- Hasta listesi 
-
-
-
-##  operasyon tipleri  --------------------------------
-
-# class SurgeryTypeListView(ListAPIView) :
-
-#     queryset = (
-
-#         SurgeryType.objects.all()
-#         .order_by("name")
-
-#     )
-
-#     serializer_class = SurgeryTypeSerializer
-
-
-##  -------------------------------- operasyon tipleri  
-
-
-
 
 ## ------------------------------------  operasyon ekleme    
 

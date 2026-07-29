@@ -94,48 +94,6 @@ class Patient ( BaseModel ) :
         return self.code
     
 
-# class SurgeryType (BaseModel) :
-#     name = models.CharField (max_length= 100, )
-
-#     PRIOROTY_CHOICES = [
-
-#         ("critical", "Kritik"),
-#         ("high", "Yüksek"),
-#         ("medium", "Orta"),
-#         ("low", "Düşük"),
-
-#     ]
-
-
-#     required_specialty = models. ForeignKey(
-#         Specialty,
-#         on_delete= models.PROTECT,
-#         related_name = "surgery_types",
-        
-#     )
-
-#     duration_slots = models.PositiveIntegerField()
- 
-
-#     priority = models.CharField(
-
-#         max_length = 20,
-#         choices = PRIOROTY_CHOICES,
-#         default= "medium",
-
-#     )
-
-
-#     compatible_rooms = models.ManyToManyField(
-#         OperatingRoom,
-#         related_name = "compatible_surgery_types",
-#         blank = True,
-
-#     )
-
-#     def __str__ (self) :
-#         return self.name
-    
 
 class SurgeryType(BaseModel):
 
@@ -211,18 +169,6 @@ class SchedulePlan(BaseModel):
         ("cp", "Constraint Programming"),
     ]
 
-    ## score sayfası --------
-    # id = models.UUIDField(
-
-    #     primary_key = True,
-    #     default = uuid.uuid4,
-    #     editable = False,
-
-    # )
-
-    
-    ## --------   score sayfası 
-
 
     planning_day = models.CharField(max_length=20)
     algorithm_name = models.CharField(max_length= 30, choices=ALGORITHM_CHOICES)
@@ -268,30 +214,6 @@ class SchedulePlan(BaseModel):
     def __str__(self):
         return f"{self.algorithm_name} - {self.planning_day} - {self.score} "
     
-
-
-
-
-
-
-    # simulation_results = [
-    #     {
-
-    #         "attempt" : result["attempt"],
-    #         "valid_index" : result["valid_index"],
-    #         "score" : result["score"],
-    #         "is_best" : result ["score"] == best_score,
-
-    #     }
-
-    #     for result  in all_results
-    # ]
-
-    ##   detail sayfasında son plan kayıtlarını göster 
-
-
-
-
 
 
 

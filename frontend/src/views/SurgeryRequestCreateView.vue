@@ -26,14 +26,7 @@
     const successMessage = ref("")
 
 
-    
-    // const form = ref<SurgeryRequestPayload>({
-
-    //     patient : "" ,
-    //     surgery_type : "" ,
-    //     priority : "medium" ,
-
-    // })
+   
 
     const form = ref({
 
@@ -43,37 +36,6 @@
 })
 
 
-    // const priorityOptions = [
-
-    //     {
-
-    //         title : "Kritik",
-    //         value : "critical",
-
-    //     },
-
-    //     {
-
-    //         title : "Yüksek",
-    //         value : "high",
-
-    //     },
-
-    //     {
-
-    //         title : "Orta",
-    //         value : "medium",
-
-    //     },
-
-    //     {
-
-    //         title : "Düşük",
-    //         value : "low",
-
-    //     },
-
-    // ]
 
 
     const selectedOperation = computed (() => {
@@ -93,13 +55,6 @@
 
         try {
 
-            // const patientResponse = await getPatients()
-
-            // const surgeryResponse = await getSurgeryTypes ()
-
-            // patients.value = patientResponse.data
-
-            // surgeryTypes.value = surgeryResponse.data
 
             const surgeryResponse = await getSurgeryTypes()
 
@@ -152,11 +107,7 @@
 
             successMessage.value = "Ameliyat talebi başarıyla oluşturuldu."
 
-            // form.value = {
-            //     patient: "",
-            //     surgery_type: "",
-            //     priority: "medium",
-            // }
+          
 
             form.value = {
             patient_code: "",
@@ -206,110 +157,11 @@
 
     })
 
-    // const submitOperation = async () => {
 
-    //     loading.value = true
-    //     successMessage.value = ""
-    //     errorMessage.value = ""
-
-
-
-    //     try {
-
-    //         await createSurgeryType (form.value)
-
-    //         successMessage.value = "Operasyon başarıyla eklendi."
-
-
-            
-    //         form.value = {
-
-    //             name : "",
-    //             duration : "",
-    //             compatible_rooms : [],
-
-    //         }
-
-    //     }   catch (error)
-        
-    //     {
-
-    //         console.log(error.response?.data ?? error)
-
-    //         errorMessage.value = "Operasyon eklenirken hata oluştu! "
-
-    //     }   finally {
-
-    //         loading.value = false
-
-    //     }
-
-    // }
 
 </script> 
 
-<!-- 
-<template>
 
-
-    <main class ="operation-page" >
-
-        <section class = "operation-card" >
-
-            <h1>
-                Operasyon Ekle 
-            </h1>
-
-
-            <form @submit.prevent = "submitOperation">
-
-                <label>
-                    Operasyon Adı
-
-                    <input 
-                        v-model.trim = "form.name"
-                        type = "text"
-                        required
-                        />
-                </label>
-
-                <label>
-
-                    Süre (30 dk slot süresi)
-
-                    <input
-                        v-model.nnumber = "form.duration"
-                        type="number"
-                        min="1"
-                        max="20"
-                        required
-                        />
-                </label>
-
-
-                <button
-                    type ="submit"
-                    :disabled="loading">
-
-                    {{ loading ? "Kaydediliyor..." : "Operasyonu Kaydet" }}
-
-                </button>
-
-            </form>
-
-            <p v-if = "successMessage">
-                    {{ successMessage }}
-            </p>
-
-            <p v-if = "errorMessage">
-                    {{ errorMessage }}
-            </p>
-
-        </section>
-
-    </main>
-
-</template> -->
 
 
 <template>
@@ -362,39 +214,9 @@
       >
 
         <div class="form-group">
-<!-- 
----------------------------
 
 
-          <label for="patient">
-            Hasta
-          </label>
-
------------------------------- -->
-
-
-
-          <!-- <select
-            id="patient"
-            v-model="form.patient"
-            :disabled="loading"
-            required
-            >
-            <option value="" disabled>
-                Hasta seçin
-            </option>
-
-            <option
-                v-for="patient in patients"
-                :key="patient.id"
-                :value="String(patient.id)"
-            >
-                {{ patient.code }}
-            </option>
-          </select> -->
-
-<!-- 
-          ----------------------------------------------- -->
+          <!-- ----------------------------------------------- --> 
 
           <label for="patient-code">
               Hasta Kodu
@@ -445,28 +267,6 @@
 <!-- 
 ---------------------------------------------------- -->
 
-          <!-- <label for="priority">
-            Öncelik
-          </label>
-
-          <select
-            id="priority"
-            v-model="form.priority"
-            :disabled="loading"
-            required
-          >
-
-            <option
-              v-for="priority in priorityOptions"
-              :key="priority.value"
-              :value="priority.value"
-            >
-              {{ priority.title }}
-            </option>
-
-          </select> -->
-<!-- 
-          ---------------------------------------------------- -->
 
         </div>
 

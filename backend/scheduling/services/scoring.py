@@ -4,11 +4,6 @@ TOTAL_SLOTS_PER_DAY = 20
 
 DAY_COUNT = 5
 
-
-
-
-
-
 PRIORITY_WEIGHTS = {
 
     "Kritik" : 100,
@@ -205,10 +200,6 @@ def calculate_schedule_score (schedule, surgeries ) :
 
 
 
-
-
-
-
     #------------------
     # 4 Room idle time
     #------------------
@@ -280,9 +271,6 @@ def calculate_schedule_score (schedule, surgeries ) :
         "gaps" : room_idle_details,
         
     })
-
-
-
 
 
     #--------------------
