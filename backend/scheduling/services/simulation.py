@@ -13,12 +13,31 @@ class SimulationEngine:
         anesthesia_teams,
         surgeries,
         planning_day,
+        soft_constraints= None,
+
     ):
         self.surgeons = surgeons
         self.rooms = rooms
         self.anesthesia_teams = anesthesia_teams
         self.surgeries = surgeries
         self.planning_day = planning_day
+
+        
+        #  --------------------------------------- constraint ayarlama
+
+
+        self.soft_constraints = soft_constraints or {
+            "day_balance": 50,
+            "anesthesia_balance": 50,
+            "room_idle": 50,
+            "surgeon_idle": 50,
+        }
+
+        print("\nSIMULATION SOFT CONSTRAINTS")
+        print("===========================")
+        print(self.soft_constraints)
+
+        # constraint ayarlama ---------------------------------------
 
     def run(self, valid_plan_target=10, max_attempts=15):
 
@@ -40,12 +59,17 @@ class SimulationEngine:
                 f"Valid {valid_count}/{valid_plan_target} ==="
             )
 
+            print("\nSIMULATION CONSTRAINTS")
+            print("======================")
+            print(self.soft_constraints)
+
             scheduler = CPScheduler(
                 surgeons=self.surgeons,
                 rooms=self.rooms,
                 anesthesia_teams=self.anesthesia_teams,
                 surgeries=self.surgeries,
                 planning_day=self.planning_day,
+                soft_constraints = self.soft_constraints,
             )
 
             schedule = scheduler.generate()

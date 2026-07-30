@@ -18,12 +18,95 @@ MAX_CONTINUOUS_SURGEON_WORK = 4
 
 class CPScheduler:
 
-    def __init__(self, surgeons, rooms, anesthesia_teams, surgeries, planning_day):
+    def __init__(
+         self, 
+         surgeons, 
+         rooms, 
+         anesthesia_teams, 
+         surgeries, 
+         planning_day,
+         soft_constraints= None,):
+        
         self.surgeons = surgeons
         self.rooms = rooms
         self.anesthesia_teams = anesthesia_teams
         self.surgeries = surgeries
         self.planning_day = planning_day
+
+
+# soft constraints ayarlama   -----------------------------------------  
+
+
+        self.soft_constraints = soft_constraints or {
+
+            "day_balance" : 50,
+            "anesthesia_balance" : 50,
+            "room_idle" : 50,
+            "surgeon_idle" : 50,  
+
+        }
+
+
+        self.day_balance_weight = self.get_weight(
+            default_weight=300,
+            slider_value=self.soft_constraints["day_balance"],
+        )
+
+        self.anesthesia_balance_weight = self.get_weight(
+            default_weight=ANESTHESIA_BALANCE_WEIGHT,
+            slider_value=self.soft_constraints["anesthesia_balance"],
+        )
+
+        self.surgeon_idle_weight = self.get_weight(
+            default_weight=SURGEON_IDLE_WEIGHT,
+            slider_value=self.soft_constraints["surgeon_idle"],
+        )   
+
+
+
+        
+        print("\nCP-SAT SOFT CONSTRAINTS")
+        print("=======================")
+        print(self.soft_constraints)
+
+
+        print("\nCP-SAT WEIGHTS")
+        print("==============")
+        print("Day balance       :", self.day_balance_weight)
+        print(
+            "Anesthesia balance:",
+            self.anesthesia_balance_weight,
+        )
+        print("Surgeon idle      :", self.surgeon_idle_weight)
+
+
+
+    def slider_to_multiplier (self, value) : 
+
+        value = max(0, min(int(value), 100))
+
+        if value <= 50 :
+
+            return value / 50
+
+        return 1 + ((value - 50) / 50 ) * 7
+
+
+
+    def get_weight(
+            self, 
+            default_weight, 
+            slider_value) :
+
+        multiplier = self.slider_to_multiplier(slider_value)
+
+        return round( default_weight * multiplier)
+
+
+
+ 
+# -----------------------------------------  soft constraints ayarlama
+
 
     def generate(self):
 

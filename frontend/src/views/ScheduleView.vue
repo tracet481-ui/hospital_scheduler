@@ -11,29 +11,85 @@ const loading = ref(false)
 const errorMessage = ref("")
 const scheduleResult = ref(null)
 
+
+
+// constraint ayarlama --------------------------------------------
+
+const softConstraints = ref({
+
+    day_balance: 50,
+
+    anesthesia_balance: 50,
+
+    room_idle: 50,
+
+    surgeon_idle: 50,
+
+})
+
+
+const constraintDescriptions = {
+
+    day_balance:
+        "Ameliyatların haftanın günlerine dengeli dağıtılmasını sağlar.",
+
+    anesthesia_balance:
+        "Anestezi ekiplerinin mümkün olduğunca eşit kullanılmasını sağlar.",
+
+    room_idle:
+        "Ameliyathaneler arasındaki boş zamanları azaltmaya çalışır.",
+
+    surgeon_idle:
+        "Aynı cerrahın ameliyatları arasındaki bekleme süresini azaltır.",
+
+}
+
+
+
+
+
+
+//  -------------------------------------------- constraint ayarlama
+
+
+
 const handleGenerate = async () => {
     loading.value = true
     errorMessage.value = ""
     scheduleResult.value = null
 
     try {
-        const response = await generateSchedule()
+
+        const response = await generateSchedule({
+
+            soft_constraints: softConstraints.value,
+
+        })
+
         scheduleResult.value = response.data
-    } catch (error) {
-        console.log(error)
-        errorMessage.value = "Plan oluşturulurken hata oluştu!"
-    } finally {
+
+    }
+    
+    catch (error) {
+        console.log("Tam hata:", error)
+        console.log("Backend cevabı:", error.response?.data)
+
+        errorMessage.value =
+            error.response?.data?.error ??
+            error.response?.data?.detail ??
+            "Plan oluşturulurken hata oluştu!"
+    }
+    
+    finally {
+
         loading.value = false
+
     }
 
 
-    const response = await generateSchedule()
+    // const response = await generateSchedule()
 
-    console.log(response.data)
-    console.log(response.data.weekly_schedule)
-    console.log(response.data.weekly_schedule[0])
 
-    scheduleResult.value = response.data
 }
 
 const handleLogout = () => {
@@ -55,6 +111,53 @@ const handleLogout = () => {
         </header>
 
         <section class="action-card">
+
+
+
+
+<!-- // constraint ayarlama --------------------------------------------
+ -->
+
+
+            <h2>Soft Constraint Ayarları</h2>
+
+            <div class="constraint-grid">
+
+                <div class="constraint-item">
+
+                    <div class="constraint-title">
+
+                        <span>Gün Dengesi</span>
+
+                        <span
+                            class="info"
+                            :title="constraintDescriptions.day_balance"
+                        >
+                            ⓘ
+                        </span>
+
+                    </div>
+
+                    <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        v-model.number="softConstraints.day_balance"
+                    />
+
+                    <strong>{{ softConstraints.day_balance }}%</strong>
+
+                </div>
+
+            </div>
+
+
+
+<!-- 
+//  -------------------------------------------- constraint ayarlama -->
+
+
             <button @click="handleGenerate" :disabled="loading">
                 {{ loading ? "Plan oluşturuluyor..." : "Plan Oluştur" }}
             </button>
@@ -277,6 +380,62 @@ pre {
 
 
 
+
+/* 
+// constraint ayarlama -------------------------------------------- */
+
+
+.constraint-grid {
+
+    display: grid;
+    gap: 20px;
+    margin-bottom: 24px;
+
+}
+
+.constraint-item {
+
+    padding: 16px;
+
+    border: 1px solid #e2e8f0;
+
+    border-radius: 10px;
+
+    background: #f8fafc;
+
+}
+
+.constraint-title {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 10px;
+
+}
+
+.constraint-item input {
+
+    width: 100%;
+
+}
+
+.info {
+
+    cursor: help;
+
+    color: #2563eb;
+
+    font-weight: bold;
+
+}
+
+
+/* 
+//  --------------------------------------------  constraint ayarlama */
 
 
 </style>

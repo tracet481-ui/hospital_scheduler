@@ -15,9 +15,40 @@ api.interceptors.request.use((config) => {
     return config
 })
 
-export const generateSchedule = () => {
-    return api.post("/schedules/generate/")
+
+// constraint ekleme -------------------------------------------------- 
+
+
+
+export interface GenerateScheduleRequest {
+
+    soft_constraints: {
+
+        day_balance: number
+        anesthesia_balance: number
+        room_idle: number
+        surgeon_idle: number
+
+    }
+
 }
+
+
+
+export const generateSchedule = (
+    data: GenerateScheduleRequest
+) => {
+
+    return api.post(
+        "/schedules/generate/",
+        data,
+    )
+
+}
+
+
+// -------------------------------------------------- constraint ekleme
+
 
 export const getPlans = () => {
     return api.get("/schedules/")

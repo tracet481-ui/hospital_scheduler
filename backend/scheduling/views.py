@@ -68,7 +68,30 @@ def slot_to_time(slot):
 
 
 
-@api_view (["POST"])
+# @api_view (["POST"])
+
+
+# constraint ayarlama -------------------------------------------------------
+
+def normalize_slider_value(value, default=50):
+
+    try:
+        value = int(value)
+
+    except (TypeError, ValueError):
+        return default
+
+    return max(
+        0,
+        min(value, 100),
+    )
+
+
+
+
+# ------------------------------------------------------- constraint ayarlama
+
+
 
 def login_view (request) :
 
@@ -108,25 +131,51 @@ def login_view (request) :
 
 
 
-class GenerateScheduleView(APIView) :
+class GenerateScheduleView(APIView):
 
-    def post(self, reequest) :
+    def post(self, request):
 
-        surgeons, rooms, anesthesia_teams, surgeries = load_scheduler_input()
+        incoming_constraints = request.data.get(
+            "soft_constraints",
+            {},
+        )
+
+        soft_constraints = {
+            "day_balance": normalize_slider_value(
+                incoming_constraints.get("day_balance"),
+            ),
+            "anesthesia_balance": normalize_slider_value(
+                incoming_constraints.get("anesthesia_balance"),
+            ),
+            "room_idle": normalize_slider_value(
+                incoming_constraints.get("room_idle"),
+            ),
+            "surgeon_idle": normalize_slider_value(
+                incoming_constraints.get("surgeon_idle"),
+            ),
+        }
+
+        surgeons, rooms, anesthesia_teams, surgeries = (
+            load_scheduler_input()
+        )
 
         simulation = SimulationEngine(
+            surgeons=surgeons,
+            rooms=rooms,
+            anesthesia_teams=anesthesia_teams,
+            surgeries=surgeries,
+            planning_day="Haftalık Plan",
+            soft_constraints=soft_constraints,
+        )
 
-            surgeons = surgeons,
-            rooms = rooms,
-            anesthesia_teams = anesthesia_teams,
-            surgeries = surgeries,
-            planning_day = "Haftalık Plan"
-
+        best_schedule, best_score, best_details, all_results = (
+            simulation.run()
         )
 
 
-
-        best_schedule, best_score, best_details, all_results = simulation.run()
+        print("\nSOFT CONSTRAINT SETTINGS")
+        print("========================")
+        print(soft_constraints)
 
 
         ##   detail sayfasında son plan kayıtlarını göster --------
