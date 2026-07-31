@@ -1,6 +1,6 @@
 <script setup lang ="ts">
 
-    import { onMounted, ref } from 'vue';
+    import { onMounted, ref } from 'vue'
 
     import {
 
@@ -32,7 +32,11 @@
 
             const response = await getSurgeryRequest()
 
-            operations.value = response.data
+            console.log ("Operation response :", response.data)
+
+            operations.value = Array.isArray(response.data)
+                  ? response.data
+                  : response.data.results ?? []
 
         }
 

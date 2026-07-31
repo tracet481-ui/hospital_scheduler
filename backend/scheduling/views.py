@@ -290,7 +290,7 @@ class GenerateScheduleView(APIView):
 
         success_rate = min(
             100,
-            max(0, int(total_score / 1300)),
+            max(0, int(total_score / 1800 )),
         )
 
         score_summary["success_rate"] = success_rate
@@ -588,7 +588,7 @@ class SurgeryRequestListCreateView(ListCreateAPIView):
             "patient",
             "surgery_type",
             "surgery_type__required_specialty",
-            "required_specialty",
+            # "required_specialty",
 
         )
         .order_by("-created_at")

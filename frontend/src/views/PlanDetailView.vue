@@ -32,6 +32,146 @@ const days = [
         "Cuma",
     ]
 
+// takvim görünümü -----------------------------------------------
+
+const selectedScheduleDay = ref(0)
+
+
+const slots = []
+
+
+for (let hour = 8; hour < 18; hour ++) {
+
+    const formattedHour = hour
+            .toString()
+            .padStart (2, "0")
+
+    slots.push(`${formattedHour} : 00`)
+    slots.push(`${formattedHour} : 30`)
+
+}
+
+const normalizeTime = (time) => {
+
+    if (!time) return ""
+
+    return String (time)
+
+        .replace(/\s/g, "")
+        .slice(0, 5)
+
+}
+
+
+const timeToMinutes = (time) => {
+
+    const normalizedTime = normalizeTime(time)
+
+    const [hour, minute] = normalizedTime
+            .split (":")
+            .map (Number)
+
+    return hour * 60 + minute
+
+}
+
+// seçilen günün operasyonları -------------------------------
+
+const selectedDayOperations = computed(() => {
+
+    if (!plan.value?.items) {
+
+        return []
+
+    }
+
+    return plan.value.items.filter (
+
+        (item) => 
+                Number(item.day_index) === 
+                Number(selectedScheduleDay.value),
+
+    )
+
+})
+
+//  -------------------------------  seçilen günün operasyonları
+
+// Slot satırları--------------------------------------------------
+
+const planSlotRows = computed(() => {
+
+    return slots.map((slot) => {
+
+        const slotMinute = timeToMinutes(slot)
+
+        const operation = selectedDayOperations.value.find(
+
+            (item) => {
+
+                const startMinute = timeToMinutes(
+
+                    item.start_time,
+
+                )
+
+                const endMinute = timeToMinutes(
+
+                    item.end_time,
+
+                )
+
+                return (
+
+                    slotMinute >= startMinute &&
+                    slotMinute < endMinute
+
+                )
+
+            },
+
+        )
+
+        return {
+
+            slot,
+            operation,
+
+        }
+
+    })
+
+})
+
+// --------------------------------------------------Slot satırları
+
+// Gün başına operasyon sayısı -----------------------------------------
+
+const getPlanDayCount = (dayIndex) => {
+
+    if (!plan.value?.items) {
+
+        return 0
+
+    }
+
+
+    return plan.value.items.filter(
+
+        (item) => 
+                Number(item.day_index) ===
+                Number(dayIndex)
+
+    ).length
+
+}
+
+// ----------------------------------------- Gün başına operasyon sayısı
+
+
+
+//  -----------------------------------------------  takvim görünümü
+
 
 const groupedSchedule = computed(() => {
     if (!plan.value?.items) return []
@@ -92,7 +232,7 @@ const getResultPercentage = (result) => {
     // Eski simulation_results kayıtlarında yalnızca score varsa
     // mevcut yüzde hesabıyla uyumluluk için geçici geri dönüş.
     if (result.score !== undefined && result.score !== null) {
-        return Math.min(100, Math.max(0, Number(result.score) / 1300))
+        return Math.min(100, Math.max(0, Number(result.score) / 1800 ))
     }
 
     return 0
@@ -549,7 +689,7 @@ const exportPlanPdf = async () => {
                 ],
 
                 [
-                    "Oluşturma tarihi",
+                    "Olusturma tarihi",
                     normalizePdfText(
                                     formatPdfDate(plan.value.created_at),
                     )
@@ -1603,7 +1743,7 @@ onMounted(loadPlanDetail)
             </table>
         </section>
 
-        <section
+        <!-- <section
             v-for="day in groupedSchedule"
             :key="day.dayName"
             class="day-card"
@@ -1631,6 +1771,152 @@ onMounted(loadPlanDetail)
                 <div>🏥 {{ item.room }}</div>
                 <div>💉 {{ item.anesthesia_team }}</div>
             </div>
+        </section> -->
+
+        <section class = "weekly-calendar-card">
+
+            <div class = "weekly-calendar-header">
+
+                <div>
+
+                    <span class = "calendar-kicker">
+                        Haftalık Ameliyat Takvimi
+                    </span>
+
+                    <h2>
+                        {{ days[selectedScheduleDay] }}
+                    </h2>
+
+                    <p>
+                        Seçilen güne ait operasyonların saat bazlı dağılımı
+                    </p>
+
+                </div>
+
+                <span class = "operation-count">
+
+                    {{ getPlanDayCount(selectedScheduleDay) }}
+
+                </span>
+
+            </div>
+
+            <div class = "day-tabs">
+
+                <button
+                        v-for = "(day, dayIndex) in days"
+                        :key = "day"
+                        type = "button"
+                        class = "day-tab"
+                        :class = "{
+                            active :
+                                selectedScheduleDay === dayIndex,
+                        }"
+                        @click = "selectedScheduleDay = dayIndex">
+                    
+                        <span>
+                            {{ day }}
+                        </span>
+
+                        <small>
+                            {{ getPlanDayCount(dayIndex) }}
+                        </small>
+                
+                </button>>
+
+            </div>
+
+
+            <div class = "plan-calendar-table-wrapper">
+
+                <table class = "plan-calendar-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>Saat</th>
+                            <th>Hasta</th>
+                            <th>Operasyon</th>
+                            <th>Doktor</th>
+                            <th>Oda</th>
+                            <th>Anestezi Ekibi</th>
+                            <th>Durum</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr
+                            v-for = "row in planSlotRows"
+                            :key = "row.slot"
+                            :class = "{
+                                'calendar-filled' :
+                                    row.operation,
+                            }">
+
+                                <td
+                                    class = "calendar-time-cell">
+                                    
+                                    {{ row.slot }}
+
+                                </td>
+
+                                <template
+                                        v-if = "row.operation">
+
+                                    <td>
+                                        <strong>
+                                            {{ row.operation.patient }}
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        {{ row.operation.operation }}
+                                    </td>
+
+                                    <td>
+                                        👨‍⚕️ {{ row.operation.surgeon }}
+                                    </td>
+
+                                    <td>
+                                        🏥 {{ row.operation.room }}
+                                    </td>
+
+                                    <td>
+                                        💉
+                                        {{
+                                            row.operation
+                                                .anesthesia_team
+                                        }}
+                                    </td>
+
+                                    <td>
+                                        <span
+                                            class = "calendar-status">
+                                            Planlandı
+                                        </span>
+                                    </td>
+
+                                </template>
+
+                                <template v-else >
+
+                                    <td
+                                        colspan = "6"
+                                        class = "calendar-empty-cell">
+                                    </td>
+
+                                </template>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
         </section>
 
 
@@ -2586,7 +2872,192 @@ rapor ekran css ---------------------------------------------------- */
 
 /* 
 -------------------------------------------------- rapor ekran css */
+/* 
+plan detail tablo -------------------------------------------------- */
 
+.weekly-calendar-card {
+    margin-top: 26px;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+.weekly-calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.calendar-kicker {
+    display: block;
+    margin-bottom: 5px;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.weekly-calendar-header h2 {
+    margin: 0;
+    color: #172554;
+    font-size: 24px;
+}
+
+.weekly-calendar-header p {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.operation-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    padding: 9px 14px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.day-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.day-tab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1px solid #dbe3ef;
+    border-radius: 11px;
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+}
+
+.day-tab:hover {
+    transform: translateY(-1px);
+    border-color: #93c5fd;
+    background: #eff6ff;
+}
+
+.day-tab.active {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
+}
+
+.day-tab small {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: rgba(148, 163, 184, 0.18);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.day-tab.active small {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.plan-calendar-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 13px;
+}
+
+.plan-calendar-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+}
+
+.plan-calendar-table th {
+    padding: 13px 14px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.plan-calendar-table td {
+    height: 45px;
+    padding: 9px 14px;
+    border-top: 1px solid #e5edf5;
+    color: #334155;
+    font-size: 14px;
+    text-align: left;
+}
+
+.calendar-time-cell {
+    width: 90px;
+    background: #fbfdff;
+    color: #1e40af !important;
+    font-weight: 800;
+}
+
+.calendar-filled {
+    background: #f3e8ff;
+}
+
+.calendar-filled:hover {
+    background: #ede9fe;
+}
+
+.calendar-empty-cell {
+    height: 34px;
+}
+
+.calendar-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #e9d5ff;
+    color: #6d28d9;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+@media (max-width: 800px) {
+    .weekly-calendar-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .day-tabs {
+        grid-template-columns: 1fr;
+    }
+
+    .day-tab {
+        width: 100%;
+    }
+}
+/* 
+------------------------------------------------- plan detail tablo */
 
 
 

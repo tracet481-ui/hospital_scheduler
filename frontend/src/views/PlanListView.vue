@@ -109,7 +109,7 @@ const getScorePercent = (score) => {
 
     if (!score) return 0
 
-    const percent = score / 1300
+    const percent = score / 1800
 
     return Math.min ( 100, Math.max ( 0, percent ))
 
