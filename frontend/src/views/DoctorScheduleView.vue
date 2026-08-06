@@ -345,11 +345,12 @@
 }
 
 .top-title select {
+    color : rgb(7, 30, 2);
     min-width: 220px;
-    padding: 12px;
-    border: 1px solid #d8e0ec;
+    padding: 12px;  
+    border: 1px solid #1e69da;
     border-radius: 8px;
-    background: white;
+    background: rgb(238, 231, 238);
 }
 
 .calendar-card,

@@ -47,10 +47,10 @@ def load_scheduler_input():
             request.surgery_type.compatible_rooms.values_list("name", flat=True)
         )
 
-        compatible_rooms = [
-            room.name 
-            for room in request.surgery_type.compatible_rooms.all()
-        ]
+        # compatible_rooms = [
+        #     room.name 
+        #     for room in request.surgery_type.compatible_rooms.all()
+        # ]
 
         surgeries.append(
             AlgoSurgeryRequest(

@@ -81,15 +81,9 @@ class CPScheduler:
 
 
 
-    def slider_to_multiplier (self, value) : 
-
+    def slider_to_multiplier(self, value) -> float:
         value = max(0, min(int(value), 100))
-
-        if value <= 50 :
-
-            return value / 50
-
-        return 1 + ((value - 50) / 50 ) * 7
+        return value / 50
 
 
 

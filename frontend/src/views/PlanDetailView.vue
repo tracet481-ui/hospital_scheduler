@@ -400,7 +400,10 @@ const getRawValue = (report) => {
     return Number(
 
         report?.raw_value ??
-        report?.["raw value"] ??
+        report?.["raw_value"] ??
+// ------------        report?.["raw value"] ??
+// ----------       
+        
         0,
 
     )
@@ -1361,8 +1364,10 @@ onMounted(loadPlanDetail)
 
                     <p>
                         Günler arasındaki yük farkı:
-                        <b>{{ dayBalance.raw_value ?? dayBalance["raw value"] ?? 0 }}</b>
-                        slot
+                        <b>{{ dayBalance.raw_value ?? dayBalance["raw_value"] ?? 0 }}</b>
+                <!-- ------------------        <b>{{ dayBalance.raw_value ?? dayBalance["raw value"] ?? 0 }}</b>
+----------------               -->        
+                         slot 
                     </p>
                 </article>
 
@@ -1379,7 +1384,9 @@ onMounted(loadPlanDetail)
                         <b>
                             {{
                                 anesthesiaBalance.raw_value ??
-                                anesthesiaBalance["raw value"] ??
+                                anesthesiaBalance["raw_value"] ??
+//              -------------                   anesthesiaBalance["raw value"] ??
+// -------------                         
                                 0
                             }}
                         </b>
@@ -1400,7 +1407,9 @@ onMounted(loadPlanDetail)
                         <b>
                             {{
                                 roomIdle.raw_value ??
-                                roomIdle["raw value"] ??
+                                roomIdle["raw_value"] ??
+//         -------------                        roomIdle["raw value"] ??
+// --------                                
                                 0
                             }}
                         </b>
@@ -1421,7 +1430,11 @@ onMounted(loadPlanDetail)
                         <b>
                             {{
                                 surgeonIdle.raw_value ??
-                                surgeonIdle["raw value"] ??
+                                surgeonIdle["raw_value"] ??
+                                
+//               -------                  surgeonIdle["raw value"] ??
+// -------------
+
                                 0
                             }}
                         </b>
@@ -1675,6 +1688,8 @@ onMounted(loadPlanDetail)
                     <span class="card-label">Skor</span>
                     <strong>{{ plan.score }}</strong>
                 </div>
+<!-- 
+                Plan success rate ----------------------------------------- -->
 
                 <div class="summary-card progress-card">
                     <div class="progress-heading">
@@ -1688,6 +1703,9 @@ onMounted(loadPlanDetail)
                         height="14"
                         rounded
                     />
+
+<!--                 
+                 ----------------------------------------- Plan success rate -->
                 </div>
 
                 <div class="summary-card">
@@ -2193,6 +2211,10 @@ onMounted(loadPlanDetail)
     font-size: 22px;
 }
 
+
+/* 
+Plan success rate ----------------------------------------- */
+
 .progress-heading {
     display: flex;
     align-items: center;
@@ -2204,6 +2226,10 @@ onMounted(loadPlanDetail)
     color: #2563eb;
     font-size: 22px;
 }
+
+
+/* 
+----------------------------------------- Plan success rate */
 
 .detail-table {
     width: 100%;

@@ -419,7 +419,8 @@ def build_score_details(score: int, details: list) -> dict :
 
              anesthesia_balance = {
 
-                "raw value" : (
+                # "raw value" : (
+                "raw_value" : (
 
                     detail.get("max_load", 0)
                     -   detail.get("min_load", 0)
@@ -446,7 +447,7 @@ def build_score_details(score: int, details: list) -> dict :
 
              room_idle = {
 
-                "raw value" : detail.get(
+                "raw_value" : detail.get(
 
                     "total_idle_slots",
                     0,
