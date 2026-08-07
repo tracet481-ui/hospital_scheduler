@@ -36,7 +36,7 @@ export interface GenerateScheduleRequest {
 
 
 export const generateSchedule = (
-    data: GenerateScheduleRequest
+    data:   GenerateScheduleRequest
 ) => {
 
     return api.post(
