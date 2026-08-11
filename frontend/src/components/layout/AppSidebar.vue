@@ -84,7 +84,7 @@ const logout = () => {
         <i class="mdi mdi-logout"></i>
       </span>
 
-      <span class="slider-tooltip">
+      <span class="sidebar-tooltip">
         Çıkış Yap
       </span>
     </button>

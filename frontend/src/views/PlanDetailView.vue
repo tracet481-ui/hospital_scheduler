@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from "vue"
-import { useRoute } from "vue-router"
+import { useRoute, useRouter, } from "vue-router"
 import { getPlanDetail } from "../services/scheduleApi"
 
 
@@ -9,6 +9,7 @@ import { autoTable } from "jspdf-autotable"
 
 
 const route = useRoute()
+const router = useRouter()
 
 const plan = ref(null)
 const errorMessage = ref("")
@@ -238,24 +239,53 @@ const getResultPercentage = (result) => {
     return 0
 }
 
-const recentPlanPercentages = computed(() => {
-    const results = simulationResults.value.slice(0, 10)
+// const recentPlanPercentages = computed(() => {
+//     const results = simulationResults.value.slice(0, 10)
 
-    let selectedIndex = results.findIndex(
-        (result) => result.is_best === true,
-    )
+//     let selectedIndex = results.findIndex(
+//         (result) => result.is_best === true,
+//     )
 
-    if (selectedIndex === -1 && plan.value?.score !== undefined) {
-        selectedIndex = results.findIndex(
-            (result) => Number(result.score) === Number(plan.value.score),
-        )
-    }
+//     if (selectedIndex === -1 && plan.value?.score !== undefined) {
+//         selectedIndex = results.findIndex(
+//             (result) => Number(result.score) === Number(plan.value.score),
+//         )
+//     }
 
-    return results.map((result, index) => ({
-        key: `${result.attempt ?? "attempt"}-${result.valid_index ?? index}`,
-        percentage: getResultPercentage(result),
-        isSelected: index === selectedIndex,
+//     return results.map((result, index) => ({
+//         key: `${result.attempt ?? "attempt"}-${result.valid_index ?? index}`,
+//         percentage: getResultPercentage(result),
+//         isSelected: index === selectedIndex,
+//     }))
+// })
+
+
+const recentPlanPercentages = computed (() => {
+
+    const result = 
+    
+            plan.value?.simlation_results ?? []
+
+    
+    return result.map((result, index) => ({
+
+        key:
+            result.valid_index ??
+            result.attempt ?? 
+            index,
+
+        
+        validIndex : 
+            result.valid_index,
+
+        percentage : 
+            calculateSimulationPercentage(result),
+
+        isSelected : 
+            result.is_best === true,
+
     }))
+
 })
 
 const formatPercentage = (percentage) => {
@@ -1251,6 +1281,30 @@ const reportData = computed (() => ({
 
 // --------------------------------------------- raporlama
 
+// 10 plan detail view -------------------------------------------
+
+const openSimulationPlan = (result) => {
+
+    recentPlansDialog.value = false
+
+    router.push  (
+        {
+            name : "simulation-plan-detail",
+            params : {
+
+                id : plan.value.id,
+                simulatiionIndex : 
+                        result.valid_index,
+
+            },
+        }
+    )
+
+}
+
+
+
+//  ------------------------------------------  10 plan detail view
 
 
 onMounted(loadPlanDetail)
@@ -1943,7 +1997,7 @@ onMounted(loadPlanDetail)
             <div
                 v-if = "recentPlansDialog"
                 class = "dialog-overlay"
-                click.self = "recentPlansDialog = false " 
+                @click.self = "recentPlansDialog = false " 
                 >
 
                 <div
@@ -1962,7 +2016,7 @@ onMounted(loadPlanDetail)
                                 type = "button"
                                 class = "dialog-close-button"
                                 aria-label = "Pencereyi Kapat"
-                                @click = "recentPlansDialog  = False">
+                                @click = "recentPlansDialog  = false">
 
                                 x
 
@@ -1973,8 +2027,55 @@ onMounted(loadPlanDetail)
                     <div
                         v-if = "recentPlanPercentages.length"
                         class = "recent-plans-list">
+
+                        <button
+                                v-for = "result in recentPlanPercentages"
+                                :key = "result.key"
+                                type = "button"
+                                class = "recent-plan-row"
+                                :class = "{selected: result.isSelected}"
+                                @click = "openSimulationPlan(result)">
+
+
+                                <div class = "recent-plan-main">
+
+                                    <span class = "candidate-name">
+
+                                        Plan {{ result.validIndex }}
+
+                                    </span>
+
+                                    <strong>
+
+                                        %{{ formatPercentage(result.percentage) }}
+
+                                    </strong>
+
+                                </div>
+
+                                <span
+                                    v-if = "result.isSelected"
+                                    class = "selected-marker">
+                                
+                                    <span class = "selected-check">
+                                        ✓
+                                    </span>
+
+                                    Seçili
+                                
+                                </span>
+
+                                <span
+                                    v-else
+                                    class = "candidate-arrow">
+                                
+                                    ›
+                                
+                                </span>
+
+                        </button>
                     
-                        <div
+                        <!-- <div
                             v-for = "result in recentPlanPercentages"
                             :key = "result.key"
                             class = "recent-plan-row"
@@ -1996,7 +2097,7 @@ onMounted(loadPlanDetail)
                                                                 
                             </span>
                         
-                        </div>
+                        </div> -->
 
                     </div>
 
@@ -2355,7 +2456,7 @@ Plan success rate ----------------------------------------- */
     gap: 9px;
 }
 
-.recent-plan-row {
+/* .recent-plan-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2364,6 +2465,38 @@ Plan success rate ----------------------------------------- */
     border: 1px solid #e2e8f0;
     border-radius: 10px;
     background: #f8fafc;
+} */
+
+.recent-plan-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+
+    padding: 14px 16px;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+
+    background: #ffffff;
+    color: inherit;
+
+    font: inherit;
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+}
+
+.recent-plan-row:hover {
+    transform: translateY(-1px);
+    border-color: #93c5fd;
+    background: #f8fafc;
 }
 
 .recent-plan-row strong {
@@ -2371,11 +2504,38 @@ Plan success rate ----------------------------------------- */
     font-size: 18px;
 }
 
-.recent-plan-row.selected {
+/* .recent-plan-row.selected {
     border-color: #14b8a6;
     background: #f0fdfa;
     box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.1);
+} */
+
+.recent-plan-row.selected {
+    border-color: #86efac;
+    background: #f0fdf4;
 }
+
+.recent-plan-main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+
+.candidate-name {
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.candidate-arrow {
+    color: #94a3b8;
+    font-size: 24px;
+    line-height: 1;
+}
+
+
+
 
 .selected-marker {
     display: flex;

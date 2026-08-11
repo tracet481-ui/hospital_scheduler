@@ -154,3 +154,22 @@ export interface SurgeryRequestResponse {
 
 
 
+export const getSimulationPlanDetail = (
+
+    planId : string,
+
+    validIndex : number,
+
+) => {
+
+    return api.get(
+        `/schedules/${planId}/simulations/${validIndex}/`
+    )
+
+}
+
+
+
+
+
+

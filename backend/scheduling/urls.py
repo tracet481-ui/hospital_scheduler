@@ -10,6 +10,7 @@ from .views import (
                 PatientListView,
                 SurgeryTypeListView,
                 SurgeryRequestListCreateView,
+                SimulationPlanDetailView,
                 )
 
 
@@ -45,6 +46,13 @@ path(
     "surgery-requests/",
     SurgeryRequestListCreateView.as_view(),
     name="surgery-request-list-create",
+),
+
+
+path(
+    "schedules/<uuid:plan_id>/simulations/<int:valid_index>/",
+    SimulationPlanDetailView.as_view(),
+    name = "simulation-plan-detail",
 ),
 
 

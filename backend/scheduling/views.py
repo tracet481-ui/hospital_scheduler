@@ -206,26 +206,72 @@ class GenerateScheduleView(APIView):
             )
 
 
+
+#  10 plan listeleme detaylı ---------------------------------------------- 
+
+
+
+        simulation_results = []
+
         
-        if all_results is None: 
+        for result in all_results :     
 
-            all_results = []
+            candidate_schedule = result["schedule"]
 
+            simulation_results.append ({
 
-
-        simulation_results = [
-
-            {
-
-                "attempt" : result ["attempt"],
+                "attempt" : result["attempt"],
                 "valid_index" : result ["valid_index"],
-                "score" : result ["score"] ,
-                "is_best" : result ["score"] == best_score ,
+                "score" : result ["score"],
+                "is_best" : result ["score"] == best_score,
 
-            }
-                for result in all_results
 
-        ]
+                "schedule" : [
+
+                    {
+                        "patient" : item.patient,
+                        "operation" : item.operation,
+
+                        "day_index" : item.day_index,
+
+                        "start_slot " : item.start_slot,
+                        "end_slot" : item.end_slot,
+
+                        "start_time" : slot_to_time (item.start_slot),
+                        "end_time" : slot_to_time (item.end_slot),
+
+                        "room" : item.room,
+                        "surgeon" : item.surgeon,
+
+                        "anesthesia_team" : item.anesthesia_team,
+
+                    }
+
+                    for item in candidate_schedule
+
+                ]
+
+            })
+
+            
+#  ---------------------------------------------- 10 plan listeleme detaylı
+
+
+
+
+        # simulation_results = [
+
+        #     {
+
+        #         "attempt" : result ["attempt"],
+        #         "valid_index" : result ["valid_index"],
+        #         "score" : result ["score"] ,
+        #         "is_best" : result ["score"] == best_score ,
+
+        #     }
+        #         for result in all_results
+
+        # ]
 
 
         rest_violations = validate_surgeon_rest_rule(best_schedule)
@@ -521,6 +567,87 @@ class ScheduleDetailView(APIView) :
             ],
 
         })
+
+
+
+
+class SimulationPlanDetailView(APIView) :
+
+    def get (
+            self,
+            request,
+            plan_id,
+            valid_index,
+    ) :
+
+        try : 
+
+            plan = SchedulePlan.objects.get(
+                                id = plan_id,
+            )
+
+        except SchedulePlan.DoesNotExist : 
+
+            return Response (
+
+                {
+                    "error" : "Ana plan bulunamadı ! "
+                },
+
+                status = status.HTTP_404_NOT_FOUND,
+
+                )
+
+        candidate = next (
+            (
+
+            result
+            for result in plan.simulation_results
+            if result.get("valid_index")
+            == valid_index
+
+            ),
+
+            None,
+        )
+
+
+        if candidate is None : 
+
+            return Response (
+                {
+                    "error" : "Aday plan bulunamadı !"
+                },
+
+                status = status.HTTP_404_NOT_FOUND,
+            )
+
+
+        return Response (
+            {
+                "plan_id" : str(plan.id),
+
+                "valid_index" : candidate.get("valid_index"),
+
+                "attempt" : candidate.get("attempt"),
+
+                "score" : candidate.get("score"),
+
+                "is_best" : candidate.get("is_best", False) , 
+
+                "items" : candidate.get("schedule", []),
+            }
+        )
+
+
+
+
+
+
+
+
+
+
 
  ## son üretilen planın verilerini tabloya yazdırıcaz
 

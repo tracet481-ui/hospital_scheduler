@@ -219,7 +219,7 @@
         </section>
 
         <section class="calendar-card">
-            <h2>Takvimden Randevu Oluştur</h2>
+        <!-- ------------    <h2>Takvimden Randevu Oluştur</h2> -->
 
             <div class="month-bar">
                 <button>Geçmiş Ay</button>
@@ -264,7 +264,7 @@
                     {{ selectedDoctor }}
                 </h2>
 
-                <button class="add-btn">+ Randevu Ekle</button>
+                <!-- <button class="add-btn">+ Randevu Ekle</button> -->
             </div>
 
             <table class="slot-table">
@@ -381,8 +381,9 @@
     color: #1e293b;
 }
 
-.month-bar button,
-.add-btn {
+.month-bar button
+/* ----   .add-btn */
+{
     background: #6d44c6;
     color: white;
     border: none;

@@ -99,6 +99,18 @@ const router = createRouter({
               },
 
 
+              {
+                path : "/plans/:id/simulations/:simulationIndex",
+                name : "simulation-plan-detail",
+                component : () => 
+                  import("../views/SimulationPlanDetailView.vue"),
+
+                meta : {
+                      requireAuth : true,
+                },
+              },
+
+
 
           ],
 

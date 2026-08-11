@@ -106,7 +106,15 @@ class SimulationEngine:
                 "schedule": schedule,
             }
 
-            all_results.append(result)
+            # all_results.append(result)
+
+            all_results.append({
+                "attempt": attempt,
+                "valid_index": valid_count,
+                "score": score,
+                "schedule": schedule,
+                "details": details,
+            })
 
             if score > best_score:
                 best_score = score
