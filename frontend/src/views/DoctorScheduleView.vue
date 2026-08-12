@@ -160,11 +160,7 @@
 
 
 
-                // console.log ("appointments", appointments.value)
-                // console.log ("selectedDoctor", selectedDoctor.value)
-                // console.log ("selectedDay", selectedDay.value)
-                // console.log ("selectedAppointments", selectedAppointments.value)
-
+ 
         }   catch (error) {
 
             console.log (error)

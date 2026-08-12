@@ -182,13 +182,31 @@ const planSlotRows = computed(() => {
 const goBack = () => {
 
     router.push({
-        name: "schedule-detail",
+        name: "plan-detail",
         params: {
             id: route.params.id,
         },
     })
 
 }
+
+
+const scoreDetails = computed (() => {
+
+    return candidate.value?.score_details ?? {}
+
+})
+
+
+const losses = computed (() =>  {
+
+    return scoreDetails.value?.losses ?? {}
+
+})
+
+
+
+
 
 
 onMounted(() => {
@@ -325,6 +343,115 @@ onMounted(() => {
                 </article>
 
             </section>
+
+<!-- 
+            10 plan detyı ------------------------------------------- -->
+
+
+            <section class = "analysis-card">
+
+                <div class = "analysis-header">
+
+                    <div>
+
+                        <span class = "page-kicker">
+                            Plan değerlendirmesi
+                        </span>
+
+                        <h2>
+                            Skor kırılımı
+                        </h2>
+
+                    </div>
+
+
+                    <span
+                        v-if = "candidate.is_best"
+                        class = "best-badge">
+                            ★ Seçilen Plan                       
+                    </span>
+
+                </div>
+
+
+                <div class = "analysis-grid">
+
+                    <article class = "analysis-item">
+
+                        <span>
+                            Güç dengesi
+                        </span>
+
+
+                        <strong>
+                            {{ losses.day_balance?.loss ?? 0 }}
+                        </strong>
+
+                    </article>
+
+
+                    <article class = "analysis-item" >
+
+                        <span>
+                            Anestezi dengesi
+                        </span>
+
+                        <strong>
+                            {{ losses.anesthesia_balance?.loss ?? 0 }}
+                        </strong>
+
+                    </article>
+
+
+                    <article class = "analysis-item">
+
+                        <span>
+                            Oda boşluğu
+                        </span>
+
+                        <strong>
+                            {{ losses.room_idle?.loss ?? 0 }}
+                        </strong>
+
+                    </article>
+
+
+                    <article class = "analysis-item">
+
+                        <span>
+                            Doktor dengesi
+                        </span>
+
+                        <strong>
+                            {{ losses.surgeon_idle?.loss ?? 0 }}
+                        </strong>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+<!-- 
+             ------------------------------------------- 10 plan detyı-->
+
+            
+             <article class = "summary-card" >
+
+                <span>
+                    Başarı oranı
+                </span>
+
+                <strong>
+                    {{ candidate.success_rate }}
+
+                </strong>
+
+             </article>
+
+
+
+
 
 
             <section class="weekly-calendar-card">

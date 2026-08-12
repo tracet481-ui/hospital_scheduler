@@ -71,6 +71,9 @@ def slot_to_time(slot):
 # @api_view (["POST"])
 
 
+
+
+
 # constraint ayarlama -------------------------------------------------------
 
 def normalize_slider_value(value, default=50):
@@ -207,6 +210,14 @@ class GenerateScheduleView(APIView):
 
 
 
+
+        total_score, score_details = calculate_schedule_score (
+
+            schedule = best_schedule,
+            surgeries= surgeries,
+
+        )
+
 #  10 plan listeleme detaylı ---------------------------------------------- 
 
 
@@ -218,6 +229,23 @@ class GenerateScheduleView(APIView):
 
             candidate_schedule = result["schedule"]
 
+
+            candidate_success_rate = min(
+                100,
+                max(
+                    0,
+                    int(result["score"] / 1800),
+                ),
+            )
+
+            candidate_score_details = build_score_details(
+
+                score = result ["score"],
+                details = result ["details"],
+
+            )
+
+
             simulation_results.append ({
 
                 "attempt" : result["attempt"],
@@ -226,13 +254,19 @@ class GenerateScheduleView(APIView):
                 "is_best" : result ["score"] == best_score,
 
 
+                "success_rate": candidate_success_rate,
+                "score_details" : candidate_score_details,
+                    "is_best": result["score"] == best_score,
+
+
+
                 "schedule" : [
 
                     {
                         "patient" : item.patient,
                         "operation" : item.operation,
 
-                        "day_index" : item.day_index,
+                        "day_index" : item.day_index,   
 
                         "start_slot " : item.start_slot,
                         "end_slot" : item.end_slot,
@@ -249,9 +283,13 @@ class GenerateScheduleView(APIView):
 
                     for item in candidate_schedule
 
-                ]
+                ],
 
             })
+
+
+
+
 
             
 #  ---------------------------------------------- 10 plan listeleme detaylı
@@ -290,12 +328,7 @@ class GenerateScheduleView(APIView):
             )
         
 
-        total_score, score_details = calculate_schedule_score (
 
-            schedule = best_schedule,
-            surgeries= surgeries,
-
-        )
 
 
         # Rapor listesi ----------------------------------------------------
@@ -334,13 +367,15 @@ class GenerateScheduleView(APIView):
             )
 
 
+
         success_rate = min(
-            100,
-            max(0, int(total_score / 1800 )),
-        )
+                100,
+                max(0, int(total_score / 1800 )),
+            )
 
         score_summary["success_rate"] = success_rate
         report_score_details["success_rate"] = success_rate
+
 
 
 
@@ -634,6 +669,8 @@ class SimulationPlanDetailView(APIView) :
                 "score" : candidate.get("score"),
 
                 "is_best" : candidate.get("is_best", False) , 
+
+                "score_details" : candidate.get("score_details", {},),
 
                 "items" : candidate.get("schedule", []),
             }

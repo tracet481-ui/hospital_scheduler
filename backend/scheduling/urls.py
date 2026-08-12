@@ -24,7 +24,7 @@ urlpatterns = [
     path("schedules/latest/", LatestScheduleView.as_view(), name = "schedule-latest"),
     path("schedules/<uuid:plan_id>/", ScheduleDetailView.as_view(), name="schedule-detail"),
 
-##  operasyon ekleme   ------------------------
+    ##  operasyon ekleme   ------------------------
     path("surgery-requests/", SurgeryRequestListCreateView.as_view(), name="surgery-request-list-create",),
 
 

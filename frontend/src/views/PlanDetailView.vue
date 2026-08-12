@@ -197,8 +197,8 @@ const loadPlanDetail = async () => {
 
         console.log("Plan detail:", plan.value)
         console.log(
-            "Simulation results:",
-            plan.value?.simulation_results,
+            "SIMULATION RESULTS:",
+            plan.value?.simulation_results
         )
     } catch (error) {
         console.log(error)
@@ -239,54 +239,48 @@ const getResultPercentage = (result) => {
     return 0
 }
 
-// const recentPlanPercentages = computed(() => {
-//     const results = simulationResults.value.slice(0, 10)
-
-//     let selectedIndex = results.findIndex(
-//         (result) => result.is_best === true,
-//     )
-
-//     if (selectedIndex === -1 && plan.value?.score !== undefined) {
-//         selectedIndex = results.findIndex(
-//             (result) => Number(result.score) === Number(plan.value.score),
-//         )
-//     }
-
-//     return results.map((result, index) => ({
-//         key: `${result.attempt ?? "attempt"}-${result.valid_index ?? index}`,
-//         percentage: getResultPercentage(result),
-//         isSelected: index === selectedIndex,
-//     }))
-// })
 
 
-const recentPlanPercentages = computed (() => {
-
-    const result = 
-    
-            plan.value?.simlation_results ?? []
 
     
-    return result.map((result, index) => ({
 
-        key:
-            result.valid_index ??
-            result.attempt ?? 
-            index,
+const recentPlanPercentages = computed(() => {
 
-        
-        validIndex : 
-            result.valid_index,
+    const results =
+        plan.value?.simulation_results ?? []
 
-        percentage : 
-            calculateSimulationPercentage(result),
+    if (!results.length) {
+        return []
+    }
 
-        isSelected : 
-            result.is_best === true,
+    return results.slice(0, 10).map((result, index) => {
 
-    }))
+        return {
+
+            key:
+                result.valid_index ??
+                result.attempt ??
+                index,
+
+            valid_index:
+                result.valid_index,
+
+            success_rate:
+                Number( result.success_rate ?? 0),
+
+            isSelected:
+                result.is_best === true,
+
+        }
+
+    })
 
 })
+
+
+
+
+
 
 const formatPercentage = (percentage) => {
     const value = Number(percentage)
@@ -1293,7 +1287,7 @@ const openSimulationPlan = (result) => {
             params : {
 
                 id : plan.value.id,
-                simulatiionIndex : 
+                simulationIndex : 
                         result.valid_index,
 
             },
@@ -2009,7 +2003,7 @@ onMounted(loadPlanDetail)
                     <div class ="dialog-header">
 
                         <h2 id = "recent-plans-title">
-                            Son 10 Plan
+                            Değerlendirilen 10 Plan
                         </h2>
 
                         <button
@@ -2041,13 +2035,13 @@ onMounted(loadPlanDetail)
 
                                     <span class = "candidate-name">
 
-                                        Plan {{ result.validIndex }}
+                                        Plan {{ result.valid_index }}
 
                                     </span>
 
                                     <strong>
 
-                                        %{{ formatPercentage(result.percentage) }}
+                                        %{{ formatPercentage(result.success_rate) }}
 
                                     </strong>
 
@@ -2075,29 +2069,7 @@ onMounted(loadPlanDetail)
 
                         </button>
                     
-                        <!-- <div
-                            v-for = "result in recentPlanPercentages"
-                            :key = "result.key"
-                            class = "recent-plan-row"
-                            :class = "{ selected: result.isSelected }" >
-                        
-                            <strong>
-                                %{{ formatPercentage(result.percentage) }}
-                            </strong>
 
-                            <span
-                            v-if = "result.isSelected"
-                                class = "selected-marker">
-
-                                <span class = "selected-check" >
-                                    ✓
-                                </span>
-
-                                Seçili
-                                                                
-                            </span>
-                        
-                        </div> -->
 
                     </div>
 
