@@ -13,11 +13,17 @@ const router = useRouter()
 
 const plan = ref(null)
 const errorMessage = ref("")
+
+const candidatePlans = ref([])
+
+
 const loading = ref(false)
 const recentPlansDialog = ref(false)
 
 
 const exportingPdf = ref(false)
+
+
 
 
 
@@ -194,6 +200,31 @@ const loadPlanDetail = async () => {
     try {
         const response = await getPlanDetail(String(route.params.id))
         plan.value = response.data
+
+
+        // 10 plan add name -------------------------------------------
+
+
+        candidatePlans.value = 
+                (response.data.simulation_results ?? [])
+                .map((result) => ({
+
+                    ...result,
+
+                    name :
+                        result.name ??
+                        `Aday Plan ${result.valid_index}`,
+
+                    editing: false,
+
+                }))
+
+
+
+
+        //  -------------------------------------------    10 plan add name
+
+
 
         console.log("Plan detail:", plan.value)
         console.log(
@@ -1301,6 +1332,45 @@ const openSimulationPlan = (result) => {
 //  ------------------------------------------  10 plan detail view
 
 
+// 10 plan add name ---------------------------------------------
+
+const saveCandidateName = async (result) => {
+
+    const name = 
+
+        resultçname.trim() || 
+        `Aday Plan ${result.valid_index}`
+
+    
+    await updateSimulationPlanName(
+
+        plan.value.id,
+        result.valid_index,
+        name,
+
+    )
+
+    result.name = name
+
+    result.editing = false
+
+}
+
+
+const resetCandidateName = async (result) => {
+
+    result.name = 
+        `Aday Plan ${result.valid_index}`
+
+    await saveCandidateName(result) 
+
+}
+
+
+
+//  ---------------------------------------------   10 plan add name
+
+
 onMounted(loadPlanDetail)
 </script>
 
@@ -1997,7 +2067,7 @@ onMounted(loadPlanDetail)
                 <div
                     class = "recent-plans-dialog"
                     role = "dialog"
-                    aria-model = "true"
+                    aria-modal = "true"
                     aria-labelledby = "recent-plans-title">
                 
                     <div class ="dialog-header">
@@ -2019,35 +2089,85 @@ onMounted(loadPlanDetail)
                     </div>
 
                     <div
-                        v-if = "recentPlanPercentages.length"
+                        v-if = "candidatePlans.length"
                         class = "recent-plans-list">
 
                         <button
-                                v-for = "result in recentPlanPercentages"
-                                :key = "result.key"
+                                v-for = "result in candidatePlans"
+                                :key = "result.valid_index"
                                 type = "button"
                                 class = "recent-plan-row"
-                                :class = "{selected: result.isSelected}"
+                                :class = "{selected: result.is_best}"
                                 @click = "openSimulationPlan(result)">
 
 
-                                <div class = "recent-plan-main">
+                                <div class = "candidate-name-area">
 
-                                    <span class = "candidate-name">
+                                    <input
+                                        v-if = "result.editing"
+                                        v-model = "result.name"
+                                        class = "candidate-name-input"
+                                        @click.stop     />
 
-                                        Plan {{ result.valid_index }}
+                                    <span 
+                                        v-else
+                                        class = "candidate-name"
+                                        @click = "openSimulationPlan(result)">
+
+                                        <!-- Plan {{ result.valid_index }} -->
+
+                                        {{ result.name }}
 
                                     </span>
 
-                                    <strong>
-
-                                        %{{ formatPercentage(result.success_rate) }}
-
-                                    </strong>
 
                                 </div>
 
-                                <span
+
+                                <strong>
+
+                                    %{{ formatPercentage(result.success_rate) }}
+
+                                </strong>
+
+
+                                <div class = "candidate-actions">
+
+                                    <button
+                                        v-if = "!result.editing"
+                                        type="button"
+                                        @click.stop = "result.editing = true">
+
+                                        ✎
+
+
+                                    </button>
+
+                                    <button
+                                        v-else
+                                        type = "button"
+                                        @click.stop = "saveCandidateName(result)">
+                                        
+                                        ✓
+
+                                        </button>
+
+
+                                        <span
+                                            v-if = "result.is_best"
+                                            class = "selected-marker">
+
+                                            Seçili
+
+                                        </span>
+
+                                    <!-- </button> -->
+
+                                </div>
+
+
+
+                                <!-- <span
                                     v-if = "result.isSelected"
                                     class = "selected-marker">
                                 
@@ -2065,14 +2185,12 @@ onMounted(loadPlanDetail)
                                 
                                     ›
                                 
-                                </span>
+                                </span> -->
 
                         </button>
                     
 
-
                     </div>
-
 
                     <p v-else class ="empty-result">
                         Simülasyon Sonucu  Bulunamadı!

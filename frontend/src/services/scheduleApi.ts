@@ -169,6 +169,28 @@ export const getSimulationPlanDetail = (
 }
 
 
+export const updateSimulationPlanName = (
+
+    planId : string,
+
+    validIndex: number,
+
+    name : string,
+
+) => {
+
+    return api.patch(
+
+        `/schedules/${planId}/simulations/${validIndex}/`,  
+
+        {
+            name,
+        },
+    )
+    
+}
+
+
 
 
 

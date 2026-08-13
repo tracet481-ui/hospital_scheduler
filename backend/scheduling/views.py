@@ -254,9 +254,12 @@ class GenerateScheduleView(APIView):
                 "is_best" : result ["score"] == best_score,
 
 
+                "name" : f"Aday Plan {result["valid_index"]}",
+
+
                 "success_rate": candidate_success_rate,
                 "score_details" : candidate_score_details,
-                    "is_best": result["score"] == best_score,
+                "is_best": result["score"] == best_score,
 
 
 
@@ -286,6 +289,10 @@ class GenerateScheduleView(APIView):
                 ],
 
             })
+
+
+
+
 
 
 
@@ -658,6 +665,8 @@ class SimulationPlanDetailView(APIView) :
             )
 
 
+    # endpoints ----------------------------------------------------------
+
         return Response (
             {
                 "plan_id" : str(plan.id),
@@ -668,23 +677,19 @@ class SimulationPlanDetailView(APIView) :
 
                 "score" : candidate.get("score"),
 
+                "success_rate" : candidate.get("success_rate", 0),
+
                 "is_best" : candidate.get("is_best", False) , 
 
                 "score_details" : candidate.get("score_details", {},),
 
                 "items" : candidate.get("schedule", []),
+
             }
         )
 
 
-
-
-
-
-
-
-
-
+    #  ---------------------------------------------------------- endpoints
 
  ## son üretilen planın verilerini tabloya yazdırıcaz
 
@@ -741,6 +746,110 @@ class LatestScheduleView(APIView) :
     
 
 ##  operasyon ekleme    ------------------------------------
+
+
+
+class SimulationPlanUpdateView(APIView) :
+
+
+    def patch(
+
+        self,
+        request,
+        plan_id,
+        valid_index,
+            
+    ):
+
+
+        try : 
+            plan = SchedulePlan.objects.get(
+                id = plan_id,
+            )
+
+
+        except SchedulePlan.DoesNotExist:
+
+            return Response (
+                {
+                    "error" : "Ana plan bulunamadı!" 
+                },
+
+                status = status.HTTP_404_NOT_FOUND,
+            )
+
+
+        simulation_results = (
+
+            plan.simulation_results or []
+
+        )
+
+        candidate = next(
+            (
+                result
+                for result in simulation_results
+                if result.get("valid_index")
+                == valid_index
+            ),
+
+            None,
+        )
+
+        if candidate is None :
+
+            return Response(
+                {
+
+                    "error": "name alanı gerekli..."
+
+                },
+
+                status = status.HTTP_400_BAD_REQUEST,
+            )
+
+
+        name = str(name).strip()
+
+        if not name :
+
+            name =  (
+                f"Aday Plan {valid_index}"
+            )
+
+
+        candidate ["name"] = name
+
+        plan.simulation_results = (
+
+            simulation_results
+
+        )
+
+
+        plan.save(
+
+            update_fields=[
+
+                "simulation_results"
+
+            ]
+            
+        )
+
+
+        return Response(
+            {
+                "success" : True,
+                "valid_index" : valid_index,
+                "name" : name,
+            }
+        )
+
+
+
+
+
 
 ## ------------------------------------  operasyon ekleme    
 

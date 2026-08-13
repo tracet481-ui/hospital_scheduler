@@ -443,8 +443,7 @@ onMounted(() => {
                 </span>
 
                 <strong>
-                    {{ candidate.success_rate }}
-
+                    %{{ candidate.success_rate }}
                 </strong>
 
              </article>
