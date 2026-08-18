@@ -1332,43 +1332,6 @@ const openSimulationPlan = (result) => {
 //  ------------------------------------------  10 plan detail view
 
 
-// 10 plan add name ---------------------------------------------
-
-const saveCandidateName = async (result) => {
-
-    const name = 
-
-        resultçname.trim() || 
-        `Aday Plan ${result.valid_index}`
-
-    
-    await updateSimulationPlanName(
-
-        plan.value.id,
-        result.valid_index,
-        name,
-
-    )
-
-    result.name = name
-
-    result.editing = false
-
-}
-
-
-const resetCandidateName = async (result) => {
-
-    result.name = 
-        `Aday Plan ${result.valid_index}`
-
-    await saveCandidateName(result) 
-
-}
-
-
-
-//  ---------------------------------------------   10 plan add name
 
 
 onMounted(loadPlanDetail)
@@ -1879,35 +1842,6 @@ onMounted(loadPlanDetail)
             </table>
         </section>
 
-        <!-- <section
-            v-for="day in groupedSchedule"
-            :key="day.dayName"
-            class="day-card"
-        >
-            <h2>{{ day.dayName }}</h2>
-
-            <div
-                v-for="item in day.items"
-                :key="`${item.patient}-${item.start_slot}`"
-                class="operation-card"
-            >
-                <div class="time">
-                    {{ item.start_time }} - {{ item.end_time }}
-                </div>
-
-                <div class="patient">
-                    {{ item.patient }}
-                </div>
-
-                <div class="operation">
-                    {{ item.operation }}
-                </div>
-
-                <div>👨‍⚕️ {{ item.surgeon }}</div>
-                <div>🏥 {{ item.room }}</div>
-                <div>💉 {{ item.anesthesia_team }}</div>
-            </div>
-        </section> -->
 
         <section class = "weekly-calendar-card">
 
@@ -2103,25 +2037,11 @@ onMounted(loadPlanDetail)
 
                                 <div class = "candidate-name-area">
 
-                                    <input
-                                        v-if = "result.editing"
-                                        v-model = "result.name"
-                                        class = "candidate-name-input"
-                                        @click.stop     />
-
-                                    <span 
-                                        v-else
-                                        class = "candidate-name"
-                                        @click = "openSimulationPlan(result)">
-
-                                        <!-- Plan {{ result.valid_index }} -->
-
+                                    <strong>
                                         {{ result.name }}
+                                    </strong>
 
-                                    </span>
-
-
-                                </div>
+                                </div>      
 
 
                                 <strong>
@@ -2133,61 +2053,17 @@ onMounted(loadPlanDetail)
 
                                 <div class = "candidate-actions">
 
-                                    <button
-                                        v-if = "!result.editing"
-                                        type="button"
-                                        @click.stop = "result.editing = true">
+                                    <span
+                                        v-if = "result.is_best"
+                                        class = "selected-marker">
 
-                                        ✎
+                                        Seçili
 
-
-                                    </button>
-
-                                    <button
-                                        v-else
-                                        type = "button"
-                                        @click.stop = "saveCandidateName(result)">
-                                        
-                                        ✓
-
-                                        </button>
-
-
-                                        <span
-                                            v-if = "result.is_best"
-                                            class = "selected-marker">
-
-                                            Seçili
-
-                                        </span>
-
-                                    <!-- </button> -->
+                                    </span>
 
                                 </div>
 
-
-
-                                <!-- <span
-                                    v-if = "result.isSelected"
-                                    class = "selected-marker">
-                                
-                                    <span class = "selected-check">
-                                        ✓
-                                    </span>
-
-                                    Seçili
-                                
-                                </span>
-
-                                <span
-                                    v-else
-                                    class = "candidate-arrow">
-                                
-                                    ›
-                                
-                                </span> -->
-
-                        </button>
+                        </button>   
                     
 
                     </div>

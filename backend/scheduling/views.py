@@ -665,6 +665,13 @@ class SimulationPlanDetailView(APIView) :
             )
 
 
+    
+
+            
+
+        
+
+
     # endpoints ----------------------------------------------------------
 
         return Response (
@@ -672,6 +679,21 @@ class SimulationPlanDetailView(APIView) :
                 "plan_id" : str(plan.id),
 
                 "valid_index" : candidate.get("valid_index"),
+
+
+
+# candidate name --------------------------------  
+
+                "name":
+                    candidate.get(
+                        "name",
+                        f"Aday Plan {valid_index}",
+                    ),
+
+
+# -------------------------------- candidate name 
+
+
 
                 "attempt" : candidate.get("attempt"),
 
@@ -690,6 +712,127 @@ class SimulationPlanDetailView(APIView) :
 
 
     #  ---------------------------------------------------------- endpoints
+
+
+
+
+
+    def patch (
+    
+            self,
+            request,
+            plan_id,
+            valid_index,
+                
+        ) :
+    
+            try : 
+                 plan = SchedulePlan.objects.get(
+    
+                    id = plan_id,
+                     
+                 )
+    
+    
+            except SchedulePlan.DoesNotExist: 
+    
+                return Response (
+                    {
+    
+                    "error" : "Ana plan bulıunamadı..."
+    
+                    },
+    
+                    status = status.HTTP_404_NOT_FOUND,
+    
+                )
+    
+            simulation_results  = (
+    
+                plan.simulation_results or []
+    
+            )
+    
+    
+            candidate = next (
+                (
+    
+                result
+                for result in simulation_results
+                if result.get("valid_index")
+                == valid_index
+    
+                ),
+    
+                None,
+    
+            )
+    
+    
+            if candidate is None:
+    
+                return Response (
+                    {
+                        "error" : "Aday plan bulunamadı..."
+                    },
+    
+                    status = status.HTTP_404_NOT_FOUND,
+                )
+    
+    
+            name = request.data.get("name")
+    
+    
+            if name is None:
+    
+                return Response (
+    
+                    {
+    
+                        "error" : "name alanı gerekli!"
+    
+                    },
+    
+                    status = status.HTTP_400_BAD_REQUEST,
+    
+                )
+    
+    
+            name = str(name).strip()
+    
+            if not name :
+    
+                name = f"Aday Plan {valid_index}"
+    
+    
+            candidate ["name"] = name
+    
+    
+            plan.simulation_results = (
+    
+                simulation_results
+    
+            )
+    
+            plan.save(
+    
+                update_fields= [
+    
+                    "simulation_results",
+    
+                ]
+    
+            )
+    
+    
+            return Response ({
+    
+                "success" : True,
+                "valid_index" :  valid_index,
+                "name" : name,
+                
+            })
+
 
  ## son üretilen planın verilerini tabloya yazdırıcaz
 

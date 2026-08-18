@@ -94,7 +94,7 @@ const router = createRouter({
                   requiresAuth :true,
                   title : "Operasyon Kaydı",
                   description : "Operasyon düzenleyin",
-                }
+                },
 
               },
 
@@ -106,7 +106,24 @@ const router = createRouter({
                   import("../views/SimulationPlanDetailView.vue"),
 
                 meta : {
-                      requireAuth : true,
+                      requiresAuth : true,
+                      title : "Seçili Plan Özeti",
+                      description : "Seçili planın özeti",
+                },
+              },
+
+              {
+                path : "/plans/:id/simple",
+                name : "simple-plan-detail",
+                component : () => 
+                  import ("../views/SimplePlanDetailView.vue"),
+
+                meta : {
+
+                  requiresAuth : true,
+                  title : "Plan Özeti",
+                  description : "Planın özet değerlendirmesini görüntüleyin",
+
                 },
               },
 

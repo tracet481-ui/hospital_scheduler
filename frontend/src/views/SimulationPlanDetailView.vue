@@ -3,7 +3,10 @@
 import { computed, onMounted, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 
-import { getSimulationPlanDetail } from "../services/scheduleApi"
+import { 
+    getSimulationPlanDetail,
+    updateSimulationPlanName,
+ } from "../services/scheduleApi"
 
 
 const route = useRoute()
@@ -15,6 +18,16 @@ const errorMessage = ref("")
 const candidate = ref<any>(null)
 
 const selectedScheduleDay = ref(0)
+
+const editingName = ref(false)
+
+const candidateName = ref ("")
+
+
+
+// -----------------------------------------------------------
+
+
 
 const DAYS = [
     "Pazartesi",
@@ -87,6 +100,13 @@ const loadCandidate = async () => {
 
         candidate.value = response.data
 
+    // aday plan name detay ------------------------------------------
+
+
+        candidateName.value =
+            response.data.name ??
+            `Aday Plan ${response.data.valid_index}`
+
         console.log(
             "Candidate plan:",
             response.data
@@ -110,6 +130,11 @@ const loadCandidate = async () => {
     }
 
 }
+
+
+
+
+    //  ------------------------------------------ aday plan name detay
 
 
 const candidateItems = computed(() => {
@@ -208,6 +233,57 @@ const losses = computed (() =>  {
 
 
 
+const saveCandidateName = async () => {
+
+    const cleanName = candidateName.value.trim ()
+
+    const finalName = 
+        cleanName || 
+        `Aday Plan ${candidate.value.valid_index}`
+
+    try {
+
+        await updateSimulationPlanName(
+            String(route.params.id),
+            Number(route.params.simulationIndex),
+            finalName,
+        )
+
+        candidateName.value = finalName
+
+        candidate.value.name = finalName
+
+        editingName.value = false
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Aday Plan adı kaydedilemedi!",
+            error,
+        )
+
+    }
+
+}
+
+
+const cancelNameEdit = () => {
+
+    candidateName.value = 
+        candidate.value?.name ??
+            `Aday Plan ${candidate.value?.valid_index}`
+
+    editingName.value = false
+
+}
+
+
+
+    //  ----------------------------------------------  aday plan isim değişikliği
+
+
 
 onMounted(() => {
 
@@ -238,7 +314,7 @@ onMounted(() => {
                     Simülasyon sonucu
                 </span>
 
-                <h1>
+                <!-- <h1>
                     Aday Plan
                     #{{ candidate?.valid_index }}
                 </h1>
@@ -247,7 +323,60 @@ onMounted(() => {
                     Bu plan aynı simülasyon
                     çalışmasında değerlendirilen
                     aday çözümlerden biridir.
-                </p>
+                </p> -->
+
+                <div class="candidate-title-row">
+
+                    <template v-if="editingName">
+
+                        <input
+                            v-model="candidateName"
+                            class="candidate-name-input"
+                            @keyup.enter="saveCandidateName"
+                            @keyup.esc="cancelNameEdit"
+                        />
+
+                        <button
+                            type="button"
+                            class="candidate-name-save"
+                            @click="saveCandidateName"
+                        >
+                            Kaydet
+                        </button>
+
+                        <button
+                            type="button"
+                            class="candidate-name-cancel"
+                            @click="cancelNameEdit"
+                        >
+                            İptal
+                        </button>
+
+                    </template>
+
+                    <template v-else>
+
+                        <div>
+                            <h1>
+                                {{ candidateName }}
+                            </h1>
+
+                            <span class="candidate-subtitle">
+                                Aday Plan #{{ candidate?.valid_index }}
+                            </span>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="candidate-name-edit"
+                            @click="editingName = true"
+                        >
+                            ✎ Düzenle
+                        </button>
+
+                    </template>
+
+                </div>
 
             </div>
 
@@ -878,5 +1007,82 @@ onMounted(() => {
     }
 
 }
+
+
+
+/* 
+ aday plan name edit ------------------------------------- */
+
+
+.candidate-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.candidate-title-row h1 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.candidate-subtitle {
+    display: block;
+    margin-top: 4px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.candidate-name-input {
+    min-width: 280px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 16px;
+    font-weight: 700;
+    outline: none;
+}
+
+.candidate-name-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.candidate-name-edit,
+.candidate-name-save,
+.candidate-name-cancel {
+    padding: 9px 14px;
+    border-radius: 9px;
+    border: 1px solid #dbe3ef;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.candidate-name-edit {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.candidate-name-save {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+}
+
+.candidate-name-cancel {
+    background: #f8fafc;
+    color: #475569;
+}
+
+/* 
+----------------------------------------- aday plan name edit */
+
+
 
 </style>

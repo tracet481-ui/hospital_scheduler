@@ -101,9 +101,27 @@ const loadPlans = async () => {
     }
 }
 
+// const goDetail = (id) => {
+//     router.push(`/plans/${id}`)
+// }
+
+
 const goDetail = (id) => {
-    router.push(`/plans/${id}`)
+
+    router.push({
+
+        name : "simple-plan-detail",
+        params : {
+
+            id : id,
+
+        },
+
+    })
+
 }
+
+
 
 const getScorePercent = (score) => {
 
@@ -144,7 +162,9 @@ onMounted(loadPlans)
                 </thead>
 
                 <tbody>
-                    <tr v-for="plan in paginatedPlans" :key="plan.id">
+                    <tr v-for="plan in paginatedPlans" 
+                        :key="plan.id"
+                        @click ="goDetail(plan.id)">
                         <td>{{ plan.id }}</td>
                         <td>{{ plan.score }}</td>
 
