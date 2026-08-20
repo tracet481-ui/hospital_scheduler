@@ -14,8 +14,39 @@ PRIORITY_WEIGHTS = {
 }
 
 
+def slider_to_multiplier(value):
 
-def calculate_schedule_score (schedule, surgeries ) :
+    value = max(
+        0,
+        min(int(value), 100),
+    )
+
+    if value <= 50:
+        return 0.5 + (value / 100)
+
+    return 1.0 + (
+        (value - 50) / 50
+    )
+
+
+def get_weight(
+    default_weight,
+    slider_value,
+):
+
+    multiplier = slider_to_multiplier(
+        slider_value
+    )
+
+    return round(
+        default_weight * multiplier
+    )
+
+
+
+
+
+def calculate_schedule_score (schedule, surgeries, soft_constraint = None, ) :
 
     """
         schedule : ScheduleItem DTO listesi
@@ -26,6 +57,18 @@ def calculate_schedule_score (schedule, surgeries ) :
         - Günler dengeli dağılsın
         - Anestezi ekipleri dengeli kullanılsın
     """
+
+    soft_constraint = soft_constraint or {
+        "day_balance": 50,
+        "anesthesia_balance": 50,
+        "room_idle": 50,
+        "surgeon_idle": 50,
+    }
+
+
+
+
+
 
     score = 0
 
@@ -128,7 +171,23 @@ def calculate_schedule_score (schedule, surgeries ) :
     min_load =min(loads)
 
 
-    day_balance_penalty = (max_load - min_load) * 100
+    day_balance_weight = get_weight (
+
+        default_weight = 300,
+        slider_value = soft_constraint [
+
+            "day_balance"
+
+        ],
+
+    )
+
+    day_balance_penalty = (
+
+        max_load - min_load
+
+    ) * day_balance_weight
+
 
     score -= day_balance_penalty
 
@@ -164,23 +223,34 @@ def calculate_schedule_score (schedule, surgeries ) :
 
     anesthesia_values =  list (anesthesia_load.values())
 
+
+    anesthesia_balance_weight = get_weight(
+        default_weight=50,
+        slider_value=soft_constraint[
+            "anesthesia_balance"
+        ],
+    )
+
     if anesthesia_values:
 
-            max_anesthesia = max (anesthesia_values)
-            min_anesthesia = min (anesthesia_values)
+        max_anesthesia = max(
+            anesthesia_values
+        )
 
+        min_anesthesia = min(
+            anesthesia_values
+        )
 
-            anesthesia_balance_penalty = (
-                
-                max_anesthesia - min_anesthesia
-            ) * 50 
-        
-    else : 
+        anesthesia_balance_penalty = (
+            max_anesthesia - min_anesthesia
+        ) * anesthesia_balance_weight
 
-            max_anesthesia = 0
-            min_anesthesia = 0 
+    else:
 
-            anesthesia_balance_penalty = 0
+        max_anesthesia = 0
+        min_anesthesia = 0
+
+        anesthesia_balance_penalty = 0
 
 
     score -= anesthesia_balance_penalty
@@ -257,9 +327,17 @@ def calculate_schedule_score (schedule, surgeries ) :
                 })
 
 
-    ROOM_IDLE_WEIGHT= 30
+    room_idle_weight = get_weight(
+        default_weight=30,
+        slider_value=soft_constraint[
+            "room_idle"
+        ],
+    )
 
-    room_idle_penalty = total_room_idle* ROOM_IDLE_WEIGHT
+    room_idle_penalty = (
+        total_room_idle
+        * room_idle_weight
+    )
 
     score -= room_idle_penalty
 
@@ -338,14 +416,16 @@ def calculate_schedule_score (schedule, surgeries ) :
                     })
 
 
-    SURGEON_IDLE_WEIGHT = 40
+    surgeon_idle_weight = get_weight(
+        default_weight=40,
+        slider_value=soft_constraint[
+            "surgeon_idle"
+        ],
+    )
 
     surgeon_idle_penalty = (
-
-            total_surgeon_idle *
-
-            SURGEON_IDLE_WEIGHT
-
+        total_surgeon_idle
+        * surgeon_idle_weight
     )
 
 

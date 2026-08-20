@@ -12,7 +12,8 @@ TOTAL_SLOTS_PER_DAY = 20
 
 DAY_BALANCE_WEIGHT = 300
 ANESTHESIA_BALANCE_WEIGHT = 50
-SURGEON_IDLE_WEIGHT = 10
+SURGEON_IDLE_WEIGHT = 40
+ROOM_IDLE_WEIGHT = 30
 MAX_CONTINUOUS_SURGEON_WORK = 4
 
 
@@ -37,30 +38,45 @@ class CPScheduler:
 # soft constraints ayarlama   -----------------------------------------  
 
 
+                # Önce soft_constraints oluştur
         self.soft_constraints = soft_constraints or {
-
-            "day_balance" : 50,
-            "anesthesia_balance" : 50,
-            "room_idle" : 50,
-            "surgeon_idle" : 50,  
-
+            "day_balance": 50,
+            "anesthesia_balance": 50,
+            "room_idle": 50,
+            "surgeon_idle": 50,
         }
 
 
+        # Sonra weightleri hesapla
         self.day_balance_weight = self.get_weight(
             default_weight=300,
-            slider_value=self.soft_constraints["day_balance"],
+            slider_value=self.soft_constraints[
+                "day_balance"
+            ],
         )
 
         self.anesthesia_balance_weight = self.get_weight(
-            default_weight=ANESTHESIA_BALANCE_WEIGHT,
-            slider_value=self.soft_constraints["anesthesia_balance"],
+            default_weight=50,
+            slider_value=self.soft_constraints[
+                "anesthesia_balance"
+            ],
         )
 
         self.surgeon_idle_weight = self.get_weight(
             default_weight=SURGEON_IDLE_WEIGHT,
-            slider_value=self.soft_constraints["surgeon_idle"],
-        )   
+            slider_value=self.soft_constraints[
+                "surgeon_idle"
+            ],
+        )
+
+        self.room_idle_weight = self.get_weight(
+            default_weight=ROOM_IDLE_WEIGHT,
+            slider_value=self.soft_constraints[
+                "room_idle"
+            ],
+        )
+
+        
 
 
 
@@ -78,23 +94,43 @@ class CPScheduler:
             self.anesthesia_balance_weight,
         )
         print("Surgeon idle      :", self.surgeon_idle_weight)
+        print("Room idle         :", self.room_idle_weight)
 
 
 
-    def slider_to_multiplier(self, value) -> float:
-        value = max(0, min(int(value), 100))
-        return value / 50
+    def slider_to_multiplier(
+            self, 
+            value,
+            ) -> float:
+
+        value = max(
+            0,
+            min(int(value), 100),
+        )
+
+        if value <= 50:
+            return 0.5 + (value / 100)
+
+        return 1.0 + (
+            (value - 50) / 50
+        )
+
 
 
 
     def get_weight(
-            self, 
-            default_weight, 
-            slider_value) :
+            self,
+            default_weight,
+            slider_value,
+        ):
 
-        multiplier = self.slider_to_multiplier(slider_value)
+            multiplier = self.slider_to_multiplier(
+                slider_value
+            )
 
-        return round( default_weight * multiplier)
+            return round(
+                default_weight * multiplier
+            )
 
 
 
@@ -659,6 +695,183 @@ class CPScheduler:
 
                 surgeon_idle_vars.append(idle)
 
+
+
+        # ---------------------------
+        # Room İdle 
+        # ---------------------------
+
+
+
+        room_idle_vars = []
+
+        for room_index, room in enumerate(self.rooms):
+            for day_index in range(5):
+
+                assigned_list = []
+                usage_terms = []
+
+                for surgery_index, surgery in enumerate(self.surgeries):
+
+                    is_room = model.NewBoolVar(
+                        f"s{surgery_index}_is_room_{room_index}_{day_index}"
+                    )
+
+                    is_day = model.NewBoolVar(
+                        f"s{surgery_index}_is_day_room_{room_index}_{day_index}"
+                    )
+
+                    assigned = model.NewBoolVar(
+                        f"s{surgery_index}_room_{room_index}_day_{day_index}"
+                    )
+
+                    model.Add(
+                        room_vars[surgery_index] == room_index
+                    ).OnlyEnforceIf(is_room)
+
+                    model.Add(
+                        room_vars[surgery_index] != room_index
+                    ).OnlyEnforceIf(is_room.Not())
+
+                    model.Add(
+                        day_vars[surgery_index] == day_index
+                    ).OnlyEnforceIf(is_day)
+
+                    model.Add(
+                        day_vars[surgery_index] != day_index
+                    ).OnlyEnforceIf(is_day.Not())
+
+                    model.AddImplication(
+                        assigned,
+                        is_room,
+                    )
+
+                    model.AddImplication(
+                        assigned,
+                        is_day,
+                    )
+
+                    model.AddBoolOr([
+                        is_room.Not(),
+                        is_day.Not(),
+                        assigned,
+                    ])
+
+                    usage = model.NewIntVar(
+                        0,
+                        surgery.duration,
+                        f"room_usage_s{surgery_index}_{room_index}_{day_index}",
+                    )
+
+                    model.Add(
+                        usage == surgery.duration
+                    ).OnlyEnforceIf(assigned)
+
+                    model.Add(
+                        usage == 0
+                    ).OnlyEnforceIf(assigned.Not())
+
+                    assigned_list.append(
+                        assigned
+                    )
+
+                    usage_terms.append(
+                        usage
+                    )
+
+        room_used = model.NewBoolVar(
+            f"room_{room_index}_used_day_{day_index}"
+        )
+
+        model.AddBoolOr(
+            assigned_list
+        ).OnlyEnforceIf(room_used)
+
+        model.AddBoolAnd(
+            [
+                assigned.Not()
+                for assigned in assigned_list
+            ]
+        ).OnlyEnforceIf(
+            room_used.Not()
+        )
+
+        first_start = model.NewIntVar(
+            0,
+            TOTAL_SLOTS_PER_DAY,
+            f"first_start_room_{room_index}_{day_index}",
+        )
+
+        last_end = model.NewIntVar(
+            0,
+            TOTAL_SLOTS_PER_DAY,
+            f"last_end_room_{room_index}_{day_index}",
+        )
+
+        total_work = model.NewIntVar(
+            0,
+            TOTAL_SLOTS_PER_DAY,
+            f"total_work_room_{room_index}_{day_index}",
+        )
+
+
+        for surgery_index, surgery in enumerate(
+            self.surgeries
+        ):
+
+            assigned = assigned_list[
+                surgery_index
+            ]
+
+            model.Add(
+                first_start
+                <= start_vars[surgery_index]
+            ).OnlyEnforceIf(
+                assigned
+            )
+
+            model.Add(
+                last_end
+                >= start_vars[surgery_index]
+                + surgery.duration
+            ).OnlyEnforceIf(
+                assigned
+            )
+
+
+            model.Add(
+                total_work == sum(
+                    usage_terms
+                )
+            )
+
+
+            idle = model.NewIntVar(
+                0,
+                TOTAL_SLOTS_PER_DAY,
+                f"room_idle_{room_index}_{day_index}",
+            )
+
+            model.Add(
+                idle
+                == last_end
+                - first_start
+                - total_work
+            ).OnlyEnforceIf(
+                room_used
+            )
+
+            model.Add(
+                idle == 0
+            ).OnlyEnforceIf(
+                room_used.Not()
+            )
+
+            room_idle_vars.append(
+                idle
+            )
+            
+
         # -------------------------
         # Priority objective
         # -------------------------
@@ -684,11 +897,16 @@ class CPScheduler:
             objective_terms.append(global_start * weight)
 
         model.Minimize(
-            sum(objective_terms)
-            + day_balance_penalty * DAY_BALANCE_WEIGHT
-            + anesthesia_balance_penalty * ANESTHESIA_BALANCE_WEIGHT
-            + sum(surgeon_idle_vars) * SURGEON_IDLE_WEIGHT
-        )
+        sum(objective_terms)
+        + day_balance_penalty
+        * self.day_balance_weight
+        + anesthesia_balance_penalty
+        * self.anesthesia_balance_weight
+        + sum(room_idle_vars)
+        * self.room_idle_weight
+        + sum(surgeon_idle_vars)
+        * self.surgeon_idle_weight
+    )
 
         # -------------------------
         # Surgeon off-day constraint

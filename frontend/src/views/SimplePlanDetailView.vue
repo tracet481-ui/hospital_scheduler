@@ -471,7 +471,7 @@ const getPlanDayCount = (dayIndex) => {
                         <span>Öncelik puanı</span>
 
                         <strong>
-                            +{{ formatScore(priorityScore) }}
+                            + {{ formatScore(priorityScore) }}
                         </strong>
 
                         <small>
@@ -486,7 +486,7 @@ const getPlanDayCount = (dayIndex) => {
                         <span>Toplam kayıp</span>
 
                         <strong>
-                            {{ formatScore(totalLoss) }}
+                            - {{ formatScore(totalLoss) }}
                         </strong>
 
                         <small>
@@ -514,7 +514,7 @@ const getPlanDayCount = (dayIndex) => {
                     <article class="loss-chip">
                         <span>Gün dengesi</span>
                         <strong>
-                            -{{ formatScore(dayBalance.loss) }}
+                            - {{ formatScore(dayBalance.loss) }}
                         </strong>
                         <small>
                             {{ dayBalance.raw_value ?? 0 }} slot fark
@@ -524,7 +524,7 @@ const getPlanDayCount = (dayIndex) => {
                     <article class="loss-chip">
                         <span>Anestezi dengesi</span>
                         <strong>
-                            -{{ formatScore(anesthesiaBalance.loss) }}
+                            - {{ formatScore(anesthesiaBalance.loss) }}
                         </strong>
                         <small>
                             {{ anesthesiaBalance.raw_value ?? 0 }} slot fark
@@ -534,7 +534,7 @@ const getPlanDayCount = (dayIndex) => {
                     <article class="loss-chip">
                         <span>Oda boşluğu</span>
                         <strong>
-                            -{{ formatScore(roomIdle.loss) }}
+                            - {{ formatScore(roomIdle.loss) }}
                         </strong>
                         <small>
                             {{ roomIdle.raw_value ?? 0 }} boş slot
@@ -544,7 +544,7 @@ const getPlanDayCount = (dayIndex) => {
                     <article class="loss-chip">
                         <span>Cerrah boşluğu</span>
                         <strong>
-                            -{{ formatScore(surgeonIdle.loss) }}
+                            - {{ formatScore(surgeonIdle.loss) }}
                         </strong>
                         <small>
                             {{ surgeonIdle.raw_value ?? 0 }} boş slot
@@ -590,7 +590,7 @@ const getPlanDayCount = (dayIndex) => {
                             </div>
 
                             <strong class="loss">
-                                -{{
+                                - {{
                                     formatScore(
                                         dayBalance.loss,
                                     )
@@ -668,7 +668,7 @@ const getPlanDayCount = (dayIndex) => {
                             </div>
 
                             <strong class="loss">
-                                -{{
+                                - {{
                                     formatScore(
                                         anesthesiaBalance.loss,
                                     )
@@ -758,7 +758,7 @@ const getPlanDayCount = (dayIndex) => {
                             </span>
 
                             <strong>
-                                -{{
+                                - {{
                                     formatScore(
                                         roomIdle.loss,
                                     )
@@ -887,7 +887,7 @@ const getPlanDayCount = (dayIndex) => {
                             </span>
 
                             <strong>
-                                -{{
+                                - {{
                                     formatScore(
                                         surgeonIdle.loss,
                                     )

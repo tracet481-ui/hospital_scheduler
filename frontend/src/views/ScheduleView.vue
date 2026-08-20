@@ -47,10 +47,11 @@ const constraintDescriptions = {
 
 
 
-
-
-//  -------------------------------------------- constraint ayarlama
-
+// --------------------------------------------
+// --------------------------------------------
+// //  -------------------------------------------- constraint ayarlama
+// --------------------------------------------
+// --------------------------------------------
 
 
 const handleGenerate = async () => {
@@ -113,10 +114,13 @@ const handleLogout = () => {
         <section class="action-card">
 
 
-
-
-<!-- // constraint ayarlama --------------------------------------------
- -->
+<!-- 
+--------------------------------------------
+--------------------------------------------
+-------------------------------------------- -->
+<!-- // soft constraint ayarlama --------------------------------------------
+--------------------------------------------
+--------------------------------------------  -->
 
 
             <h2>Soft Constraint Ayarları</h2>
@@ -124,6 +128,7 @@ const handleLogout = () => {
             <div class="constraint-grid">
 
                 <div class="constraint-item">
+                    <div class="constraint-item">
 
                     <div class="constraint-title">
 
@@ -137,6 +142,8 @@ const handleLogout = () => {
                         </span>
 
                     </div>
+                    </div>
+
 
                     <input
                         type="range"
@@ -148,15 +155,108 @@ const handleLogout = () => {
 
                     <strong>{{ softConstraints.day_balance }}%</strong>
 
+
+
+                    <div class = "constraint-item" >
+
+                        <div class = "constraint-title">
+
+                            <span>
+                                Anestezi Dengesi
+                            </span>
+
+                            <span
+                                class = "info"
+                                :title = "constraintDescriptions.anesthesia_balance"
+                                >
+                                    ⓘ        
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <input
+                        type = "range"
+                        min = "0"
+                        max = "100"
+                        step = "1"
+                        v-model.number ="softConstraints.anesthesia_balance"
+                        />
+
+                    <strong>{{ softConstraints.anesthesia_balance }}%</strong>
+
+                    <div class = "constraint-item">
+
+                        <div class= "constraint-title">
+
+                            <span>
+                                Oda Boşluğu
+                            </span>
+
+                            <span
+                                class = "info"
+                                :title = "constraintDescriptions.room_idle"
+                                >
+                                ⓘ
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <input
+                        type = "range"
+                        min = "0"
+                        max = "100"
+                        step = "1"
+                        v-model.number = "softConstraints.room_idle"
+                        >
+                    
+                    <strong>{{ softConstraints.room_idle }}</strong>
+
+                    <div class = "constraint-item">
+
+                        <div class = "constraint-title">
+
+                            <span>
+                                Cerrah Boşluğu
+                            </span>
+
+                            <span
+                                class = "info"
+                                :title = "constraintDescriptions.surgeon_idle"
+                            >
+                                ⓘ
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <input 
+                        type = "range"
+                        min = "0"
+                        max = "100"
+                        step = "1"
+                        v-model.number = "softConstraints.surgeon_idle"
+                        >
+
+                    <strong>{{ softConstraints.surgeon_idle }}</strong>
+
                 </div>
 
             </div>
 
 
 
-<!-- 
-//  -------------------------------------------- constraint ayarlama -->
-
+<!-- --------------------------------------------
+ --------------------------------------------
+ --------------------------------------------
+ //  -------------------------------------------- soft constraint ayarlama -->
+<!-- --------------------------------------------
+--------------------------------------------
+--------------------------------------------  -->
 
             <button @click="handleGenerate" :disabled="loading">
                 {{ loading ? "Plan oluşturuluyor..." : "Plan Oluştur" }}

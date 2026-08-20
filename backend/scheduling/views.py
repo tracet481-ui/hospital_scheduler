@@ -215,6 +215,7 @@ class GenerateScheduleView(APIView):
 
             schedule = best_schedule,
             surgeries= surgeries,
+            soft_constraint = soft_constraints,
 
         )
 

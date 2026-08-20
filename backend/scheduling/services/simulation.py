@@ -91,6 +91,7 @@ class SimulationEngine:
             score, details = calculate_schedule_score(
                 schedule=schedule,
                 surgeries=self.surgeries,
+                soft_constraint = self.soft_constraints,
             )
 
 # score details ----------------------------------------
