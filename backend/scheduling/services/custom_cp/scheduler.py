@@ -79,18 +79,47 @@ class CustomCPScheduler :
         )
 
 
-        self.state = SolverState (
 
-            surgeons = self.surgeries,
-            rooms = self.rooms,
-            anesthesia_teams = self.anesthesia_teams,
-            total_days = TOTAL_DAYS,
-            slots_per_day = SLOTS_PER_DAY,
+        print("\nDOMAIN DEBUG")
+        print("============")
+    
+        print(
+            "Surgery count:",
+            len(self.surgeries),
+        )
+    
+        print(
+            "Domain count:",
+            len(domains),
+        )
+    
+        for surgery in self.surgeries[:10]:
+    
+            print(
+                surgery.patient,
+                "->",
+                len(
+                    domains.get(
+                        surgery.patient,
+                        [],
+                    )
+                ),
+                "values",
+            )
 
+
+
+
+        self.state = SolverState(
+            surgeons=self.surgeons,
+            rooms=self.rooms,
+            anesthesia_teams=self.anesthesia_teams,
+            total_days=TOTAL_DAYS,
+            slots_per_day=SLOTS_PER_DAY,
         )
 
 
-        success = self.search (
+        success = self._search (
 
             state = self.state,
             domains = domains,
@@ -153,6 +182,15 @@ class CustomCPScheduler :
 
 
 
+
+    
+
+    
+
+
+
+
+
     def _search (
 
         self,
@@ -161,7 +199,7 @@ class CustomCPScheduler :
             
     ) : 
 
-        self.nodes_visited += 1,
+        self.nodes_visited += 1
 
 
         
@@ -263,8 +301,14 @@ class CustomCPScheduler :
 
             )
 
+        #  Burası FOR'un DIŞINDA
+        self.backtrack_count += 1
 
-            return False
+
+
+
+
+        return False
 
 
 
@@ -339,6 +383,47 @@ class CustomCPScheduler :
 
         return schedule
 
+
+
+class SolverState:
+
+    def __init__(
+        self,
+        surgeons,
+        rooms,
+        anesthesia_teams,
+        total_days=5,
+        slots_per_day=20,
+    ):
+
+        self.assignments = {}
+
+        self.room_occupancy = {
+            room.name: [
+                [None for _ in range(slots_per_day)]
+                for _ in range(total_days)
+            ]
+            for room in rooms
+        }
+
+        self.surgeon_occupancy = {
+            surgeon.name: [
+                [None for _ in range(slots_per_day)]
+                for _ in range(total_days)
+            ]
+            for surgeon in surgeons
+        }
+
+        self.anesthesia_occupancy = {
+            team.name: [
+                [None for _ in range(slots_per_day)]
+                for _ in range(total_days)
+            ]
+            for team in anesthesia_teams
+        }
+
+
+        
 
 
 

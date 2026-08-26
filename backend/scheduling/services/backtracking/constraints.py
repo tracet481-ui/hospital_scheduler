@@ -9,7 +9,7 @@ def surgeon_matches_specialty(surgeon, surgery) -> bool:
     return surgeon.specialty == surgery.required_specialty
 
 
-def room_is_compitable(room, surgery) -> bool:
+def room_is_compatible(room, surgery) -> bool:
     if surgery.required_room is not None:
         return room.name == surgery.required_room
 
@@ -88,7 +88,7 @@ def can_place_surgery(
     ):
         return False
 
-    if not room_is_compitable(room, surgery):
+    if not room_is_compatible(room, surgery):
         return False
 
     if not slots_are_free(room_occupancy, room.name, start_slot, surgery.duration):

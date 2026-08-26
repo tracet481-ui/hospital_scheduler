@@ -75,7 +75,7 @@ def calculate_degree (
         if (
 
             other_surgery.patient
-            == surgery.patient
+            == surgery.patient  
 
         ):
 
@@ -122,9 +122,9 @@ def surgeries_share_constraint (
 
     shared_room = bool (
 
-        set(surgery_a.compitable_rooms)
+        set(surgery_a.compatible_rooms)
         &
-        set(surgery_b.compitable_rooms)
+        set(surgery_b.compatible_rooms)
 
     )
 

@@ -32,6 +32,90 @@ def build_domains (
 
     for surgery in surgeries :
 
+
+        print("\nSURGERY DOMAIN DEBUG")
+        print("====================")
+
+        print("Patient:", surgery.patient)
+        print("Duration:", surgery.duration)
+        print(
+            "Required specialty:",
+            surgery.required_specialty,
+        )
+        print(
+            "Compatible rooms:",
+            surgery.compatible_rooms,
+        )
+
+        print(
+            "Surgeons:",
+            [
+                (
+                    surgeon.name,
+                    surgeon.specialty,
+                )
+                for surgeon in surgeons
+            ],
+        )
+
+        surgery_domain = []
+
+        # ----------------------------------------------------------
+        # ----------------------------------------------------------
+
+
+        for index, surgery in enumerate(surgeries):
+
+            if index == 0:
+
+                print("\nSURGERY DOMAIN DEBUG")
+                print("====================")
+                print("Patient:", surgery.patient)
+                print("Duration:", surgery.duration)
+                print(
+                    "Required specialty:",
+                    surgery.required_specialty,
+                )
+                print(
+                    "Compatible rooms:",
+                    surgery.compatible_rooms,
+                )
+                print(
+                    "Surgeons:",
+                    [
+                        (
+                            surgeon.name,
+                            surgeon.specialty,
+                        )
+                        for surgeon in surgeons
+                    ],
+                )
+
+
+        for room in surgery.compatible_rooms:
+
+            print(
+                "ROOM CANDIDATE:",
+                room,
+                type(room),
+            )
+
+
+        for surgeon in surgeons:
+
+            if (
+                surgeon.specialty
+                == surgery.required_specialty
+            ):
+
+                print(
+                    "MATCHED SURGEON:",
+                    surgeon.name,
+                )
+
+        # ------------------------------------------------------------
+        # ------------------------------------------------------------
+
         surgery_domain = []
 
         for day in range(days_count) :
@@ -51,7 +135,7 @@ def build_domains (
 
                     continue
 
-                for room in surgery.compitable_rooms:
+                for room in surgery.compatible_rooms:
 
                     for surgeon in surgeons :
 
