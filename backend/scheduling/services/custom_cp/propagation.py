@@ -48,7 +48,7 @@ def forward_check (
 
         if(
 
-            surgery.paatient
+            surgery.patient
 
             in state.assignments
 

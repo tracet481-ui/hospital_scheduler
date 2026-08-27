@@ -50,17 +50,35 @@ class SolverState:
         surgery,
         value,
     ):
-        self.assignments[surgery.patient] = value
+
+        self.assignments[
+            surgery.patient
+        ] = value
 
         day = value.day
         start = value.start_slot
-        end = start + surgery.duration
 
-        for slot in range(start, end):
-            self.room_occupancy[value.room][day][slot] = surgery.patient
-            self.surgeon_occupancy[value.surgeon][day][slot] = surgery.patient
-            self.anesthesia_occupancy[value.anesthesia_team][day][slot] = surgery.patient
+        end = (
+            start
+            + surgery.duration
+        )
 
+        for slot in range(
+            start,
+            end,
+        ):
+
+            self.room_occupancy[
+                value.room
+            ][day][slot] = surgery.patient
+
+            self.surgeon_occupancy[
+                value.surgeon
+            ][day][slot] = surgery.patient
+
+            self.anesthesia_occupancy[
+                value.anesthesia_team
+            ][day][slot] = surgery.patient
 
     # ---------------------------------------------------
     # Geri alma
@@ -72,13 +90,34 @@ class SolverState:
         surgery,
         value,
     ):
-        self.assignments.pop(surgery.patient, None)
+
+        self.assignments.pop(
+            surgery.patient,
+            None,
+        )
 
         day = value.day
         start = value.start_slot
-        end = start + surgery.duration
 
-        for slot in range(start, end):
-            self.room_occupancy[value.room][day][slot] = None
-            self.surgeon_occupancy[value.surgeon][day][slot] = None
-            self.anesthesia_occupancy[value.anesthesia_team][day][slot] = None
+        end = (
+            start
+            + surgery.duration
+        )
+
+        for slot in range(
+            start,
+            end,
+        ):
+
+            self.room_occupancy[
+                value.room
+            ][day][slot] = None
+
+            self.surgeon_occupancy[
+                value.surgeon
+            ][day][slot] = None
+
+            self.anesthesia_occupancy[
+                value.anesthesia_team
+            ][day][slot] = None
+    

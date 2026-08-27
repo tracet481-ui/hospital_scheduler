@@ -6,6 +6,11 @@ from scheduling.services.custom_cp.scheduler import (
                                     CustomCPScheduler,
 )
 
+from scheduling.services.validators import (
+
+    validate_surgeon_rest_rule,
+
+)
 
 
 def run_custom_cp_test () :
@@ -121,6 +126,36 @@ def run_custom_cp_test () :
         len(schedule),
     )
 
+    # -------------------------------------------------------
+    # CUSTOM CP VİOLATİON
+    # -------------------------------------------------------
+
+    rest_vialotions = validate_surgeon_rest_rule (
+
+        schedule
+
+    )
+
+
+    print("\nCUSTOM CP VALIDATION")
+    print("======================")
+
+
+    print(
+
+        "Rest violation count : ",
+        len(rest_vialotions),
+
+    )
+
+
+    for violation in rest_vialotions :
+
+        print(violation)
+
+
+
+
 
 
     for item in schedule :
@@ -140,13 +175,133 @@ def run_custom_cp_test () :
         )
 
 
+# ----------------------------------------------------
+# violation çıktı
+# ----------------------------------------------------
+
+    overlap_violations = (
+
+        validate_resource_overlaps (
+
+            schedule
+
+        )
+
+    )
+
+
+    print(
+
+        "Overlap violation count : ",
+        len(overlap_violations),
+
+    )
+
+    for violation in overlap_violations :
+
+        print(violation)
+
+
 
 if __name__ == "__main__" :
 
     run_custom_cp_test() 
 
 
+def validate_resource_overlaps (
 
+    schedule,
+        
+):
+
+    violations = []
+
+
+    for i in range (len(schedule)) :
+
+        for j in range (
+
+            i + 1,
+            len (schedule),
+
+        ):
+
+
+            first = schedule [i]
+            second = schedule [j]
+
+
+            if (
+
+                first.day_index
+                !=  second.day_index
+
+            ):
+
+                continue
+
+
+            overlaps = (
+
+                first.start_slot
+                < second.end_slot
+
+                and
+
+                second.start_slot
+                < first.end_slot
+
+            )
+
+
+            if not overlaps :
+
+                continue 
+
+            if first.room == second.room    :
+
+                violations.append ({
+
+                    "type" : "ROOM",
+                    "first" : first.patient,
+                    "second" : second.patient,
+
+                })
+
+
+            if (
+
+                first.surgeon
+                == second.surgeon
+
+            ):
+
+                violations.append ({
+
+                    "type" : "SURGEON",
+                    "first" : first.patient,
+                    "second" : second.patient,
+
+                })
+
+
+            if (
+
+                first.anesthesia_team
+                == second.anesthesia_team
+
+            ):
+
+                violations.append ({
+
+                    "type" : "ANESTHESIA",
+                    "first" : first.patient,
+                    "second" : second.patient,
+
+                })
+
+
+    return violations
 
 
         

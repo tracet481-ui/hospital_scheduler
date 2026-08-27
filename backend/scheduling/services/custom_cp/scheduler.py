@@ -385,42 +385,42 @@ class CustomCPScheduler :
 
 
 
-class SolverState:
+# class SolverState:
 
-    def __init__(
-        self,
-        surgeons,
-        rooms,
-        anesthesia_teams,
-        total_days=5,
-        slots_per_day=20,
-    ):
+#     def __init__(
+#         self,
+#         surgeons,
+#         rooms,
+#         anesthesia_teams,
+#         total_days=5,
+#         slots_per_day=20,
+#     ):
 
-        self.assignments = {}
+#         self.assignments = {}
 
-        self.room_occupancy = {
-            room.name: [
-                [None for _ in range(slots_per_day)]
-                for _ in range(total_days)
-            ]
-            for room in rooms
-        }
+#         self.room_occupancy = {
+#             room.name: [
+#                 [None for _ in range(slots_per_day)]
+#                 for _ in range(total_days)
+#             ]
+#             for room in rooms
+#         }
 
-        self.surgeon_occupancy = {
-            surgeon.name: [
-                [None for _ in range(slots_per_day)]
-                for _ in range(total_days)
-            ]
-            for surgeon in surgeons
-        }
+#         self.surgeon_occupancy = {
+#             surgeon.name: [
+#                 [None for _ in range(slots_per_day)]
+#                 for _ in range(total_days)
+#             ]
+#             for surgeon in surgeons
+#         }
 
-        self.anesthesia_occupancy = {
-            team.name: [
-                [None for _ in range(slots_per_day)]
-                for _ in range(total_days)
-            ]
-            for team in anesthesia_teams
-        }
+#         self.anesthesia_occupancy = {
+#             team.name: [
+#                 [None for _ in range(slots_per_day)]
+#                 for _ in range(total_days)
+#             ]
+#             for team in anesthesia_teams
+#         }
 
 
         
