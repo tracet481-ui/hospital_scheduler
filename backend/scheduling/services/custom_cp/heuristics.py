@@ -1,3 +1,7 @@
+from .constraints import is_consistent
+
+
+
 def select_unassigned_surgery (
 
     surgeries,
@@ -142,6 +146,9 @@ def order_domain_values(
     surgery,
     domains,
     state,
+    surgeries,
+    surgeons_by_name,
+    slots_per_day,
         
 ):
 
@@ -152,9 +159,111 @@ def order_domain_values(
     # en az değer eleyen seçenek önce gelecek.
 
 
-    return domains[
-        surgery.patient
+    values = domains [surgery.patient]
+
+    scored_values = []
+
+    for value in values :
+
+        state.assign (
+
+            surgery,
+            value,
+
+        )
+
+
+        elimination_count = 0
+
+        for other_surgery in surgeries :
+
+            if  (
+
+                other_surgery.patient
+                ==
+                surgery.patient
+
+            )   :
+
+                continue
+
+
+            if  (
+
+                other_surgery.patient
+                in
+                state.assignments
+
+            ):
+
+                continue
+
+
+            for other_value in domains [
+
+                other_surgery.patient
+
+            ]:
+
+                if not is_consistent    (
+
+                    surgery = other_surgery,
+                    value = other_value,
+                    state = state,
+                    surgeons_by_name = surgeons_by_name,
+                    slots_per_day = slots_per_day,
+
+                ):
+
+                    elimination_count += 1
+
+
+        state.unassign  (
+
+            surgery,
+            value,
+
+        )
+
+
+        scored_values.append    (
+
+            (
+
+                elimination_count,
+                value,  
+
+            )
+
+        )
+
+
+    scored_values.sort  (
+
+        key = lambda item : item[0]
+
+    )
+
+
+    print(
+        "LCV SCORED VALUES:",
+        len(scored_values),
+    )
+
+
+    return [
+
+        value
+
+        for _, value in scored_values
+
     ]
+
+
+        
+
+
+
 
 
 

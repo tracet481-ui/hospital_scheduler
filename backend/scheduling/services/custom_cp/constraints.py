@@ -185,6 +185,126 @@ def anesthesia_is_available(
     )
 
 
+
+
+def has_required_surgeon_rest   (
+
+    surgery,
+    value,
+    state,
+        
+) :
+
+
+    occupancy = state.surgeon_occupancy [
+
+        value.surgeon
+
+    ][value.day]
+
+
+    start_slot = value.start_slot
+
+
+    if start_slot == 0 :
+
+        return True
+
+
+    continuous_work = 0 
+
+
+    slot = start_slot - 1
+
+
+    while (
+
+        slot >= 0
+        and occupancy [slot] is not None
+
+    ):
+
+        continuous_work += 1
+
+        slot -= 1
+
+
+    if continuous_work >=4 :
+
+        return False
+
+
+    return True
+
+
+
+
+
+
+# ---------------------------------------------
+# rest valid control
+# ---------------------------------------------
+
+def surgeon_rest_is_valid (
+
+    surgery,
+    value,
+    state,
+        
+):
+
+    occupancy = state.surgeon_occupancy[
+
+        value.surgeon
+
+    ][value.day]
+
+    start = value.start_slot
+    end = start + surgery.duration
+
+
+    simulated = occupancy.copy()
+
+    for slot in range (start, end) :
+
+        simulated [slot] = surgery.patient
+
+
+    continuous_work = 0
+
+
+    for slot in range   (len(simulated)) :
+
+        if simulated [slot] is not None:
+
+            continuous_work += 1
+
+            continue
+
+
+        if continuous_work >= 4:
+
+            # çalışma bloğundan sonra gün bittiyse
+            # en az bu boş slot rest görevi görür
+
+            continuous_work = 0
+
+
+
+        else :
+
+            continuous_work = 0
+
+
+    return True
+
+
+
+
+
+
+
+
 # -------------------------------------
 # rest rule
 # -------------------------------------
@@ -197,45 +317,78 @@ def respects_rest_rule(
 ):
 
 
-
-    start_slot = value.start_slot
-
-    if start_slot == 0:
-        return True
-
     occupancy = (
         state.surgeon_occupancy[
             value.surgeon
         ][value.day]
     )
 
-    previous_slot = (
-        start_slot - 1
-    )
+    start_slot = value.start_slot
 
-    if (
-        occupancy[
-            previous_slot
-        ]
-        is None
-    ):
-        return True
+    end_slot = ( start_slot + surgery.duration )   
 
-    continuous_work = 0
 
-    slot = previous_slot
+    # -------------------------------------------------
+    # sol taraf
+    # -------------------------------------------------
+
+    continuous_before = 0
+
+    slot = start_slot - 1
 
     while (
+
         slot >= 0
-        and occupancy[slot]
-        is not None
-    ):
-        continuous_work += 1
+        and
+        occupancy [slot] is not None
+
+    ): 
+
+        continuous_before += 1
+
         slot -= 1
 
-    return (
-        continuous_work < 4
-    )
+
+    if continuous_before >= 4 :
+
+        return False
+
+
+    # -------------------------------------------------
+    # sağ taraf
+    # -------------------------------------------------
+
+    continuous_after = 0
+
+    slot = end_slot
+
+    while (
+
+        slot < len (occupancy)
+        and
+        occupancy[slot] is not None
+
+    ):
+            
+        continuous_after += 1
+
+        slot -= 1
+
+
+    if (
+
+        surgery.duration >= 4 
+        and 
+        continuous_after > 0
+
+    ):
+
+
+        return False
+
+
+    return True
+
 
 
 

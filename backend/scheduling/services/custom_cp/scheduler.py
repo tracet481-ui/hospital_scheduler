@@ -41,6 +41,8 @@ class CustomCPScheduler :
         self.surgeries = surgeries
         self.planning_day = planning_day
 
+        # self.lcv_checks = 0
+
 
         self.soft_constraints = (
 
@@ -63,6 +65,10 @@ class CustomCPScheduler :
         self.nodes_visited = 0
         self.backtrack_count = 0
         self.pruned_branches = 0
+
+        # self.nodes_pruned = 0
+        self.forward_check_calls = 0
+        self.values_pruned = 0 
 
 
     def generate (self) :
@@ -149,6 +155,21 @@ class CustomCPScheduler :
             )
 
 
+            print   (
+            
+                "Forward check calls :",
+                self.forward_check_calls,
+    
+            )
+    
+            print   (
+    
+                "Domain values pruned :",
+                self.values_pruned,
+    
+            )
+
+
             return None
 
 
@@ -177,6 +198,20 @@ class CustomCPScheduler :
             self.pruned_branches,
         )    
 
+        print   (
+
+            "Forward check calls :",
+            self.forward_check_calls,
+
+        )
+
+        print   (
+
+            "Domain values pruned :",
+            self.values_pruned,
+
+        )
+
 
         return schedule
 
@@ -203,6 +238,8 @@ class CustomCPScheduler :
 
 
         
+            # Tüm ameliyatlar atandı mı?
+
 
         if (
 
@@ -213,6 +250,10 @@ class CustomCPScheduler :
         ):
 
             return True
+
+
+            # Önce surgery seçiliyor
+
 
 
         surgery  = select_unassigned_surgery (
@@ -229,12 +270,36 @@ class CustomCPScheduler :
             return False
 
 
+            # surgery artık var, patient'a erişebiliriz
+        print(
+            "SELECTED:",
+            surgery.patient,
+            "RAW DOMAIN:",
+            len(domains[surgery.patient]),
+        )
+
+# ---------------------------------------------
+# LCV ÇAĞRISI
+# ---------------------------------------------
+
+
+
         values = order_domain_values (
 
             surgery = surgery,
             domains = domains,
             state = state,
 
+            surgeries = self.surgeries,
+            surgeons_by_name = self.surgeons_by_name,
+            slots_per_day = SLOTS_PER_DAY,
+
+        )
+
+
+        print(
+            "LCV DOMAIN:",
+            len(values),
         )
 
 
@@ -262,7 +327,9 @@ class CustomCPScheduler :
 
             )
 
-            reduced_domains = forward_check(
+            self.forward_check_calls += 1
+
+            reduced_domains, pruned_count =( forward_check(
 
                 selected_surgery = surgery,
                 surgeries = self.surgeries,
@@ -272,7 +339,9 @@ class CustomCPScheduler :
                         self.surgeons_by_name,
                 slots_per_day = SLOTS_PER_DAY,
 
-            )
+            )   )
+
+            self.values_pruned += pruned_count
 
 
             if reduced_domains is not None : 

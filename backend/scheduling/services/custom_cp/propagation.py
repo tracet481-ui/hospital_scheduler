@@ -26,6 +26,8 @@ def forward_check (
 
     }
 
+    pruned_count = 0
+
 
     for surgery in surgeries :
 
@@ -56,15 +58,15 @@ def forward_check (
             continue
 
 
+        old_values = new_domains [
+            surgery.patient
+        ]
+
+
         valid_values = []
 
 
-        for value in new_domains[
-
-            surgery.patient
-
-
-        ]:
+        for value in old_values :
 
             if is_consistent(
 
@@ -83,6 +85,15 @@ def forward_check (
                 )
 
 
+        pruned_count += (
+
+            len(old_values)
+            -
+            len(valid_values)
+
+        )
+
+
         new_domains[
 
             surgery.patient
@@ -95,10 +106,10 @@ def forward_check (
 
         if not valid_values:
 
-            return None
+            return None, pruned_count
          
 
-    return new_domains
+    return new_domains, pruned_count
 
 
 
