@@ -137,7 +137,7 @@ def run_custom_cp_test () :
     )
 
 
-    print("\nCUSTOM CP VALIDATION")
+    print("\nCUSTOM CP VALIDATION \n \n")
     print("======================")
 
 
@@ -155,24 +155,9 @@ def run_custom_cp_test () :
 
 
 
+    print("")
+    print("")
 
-
-
-    for item in schedule :
-
-
-        print(
-
-            item.day_index,
-            item.start_slot,
-            item.end_slot,
-            item.patient,
-            item.operation,
-            item.room,
-            item.surgeon,
-            item.anesthesia_team,
-
-        )
 
 
 # ----------------------------------------------------
@@ -193,13 +178,36 @@ def run_custom_cp_test () :
     print(
 
         "Overlap violation count : ",
-        len(overlap_violations),
+        len(overlap_violations) ,
 
     )
 
     for violation in overlap_violations :
 
         print(violation)
+
+
+
+    print("")
+    print("")
+
+
+
+    for item in schedule :
+    
+
+        print(
+
+            item.day_index,
+            item.start_slot,
+            item.end_slot,
+            item.patient,
+            item.operation,
+            item.room,
+            item.surgeon,
+            item.anesthesia_team,
+
+        )
 
 
 

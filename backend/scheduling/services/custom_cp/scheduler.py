@@ -13,6 +13,13 @@ from .heuristics import (
 
 from .propagation import forward_check
 
+from scheduling.services.scoring import (
+
+    calculate_schedule_score,
+    build_score_details,
+
+)
+
 
 
 TOTAL_DAYS = 5
@@ -32,6 +39,7 @@ class CustomCPScheduler :
         surgeries,
         planning_day,
         soft_constraints = None,
+        solution_target = 10,
             
     ):
 
@@ -40,6 +48,7 @@ class CustomCPScheduler :
         self.anesthesia_teams = anesthesia_teams
         self.surgeries = surgeries
         self.planning_day = planning_day
+        self.solution_target = solution_target
 
         # self.lcv_checks = 0
 
@@ -69,6 +78,24 @@ class CustomCPScheduler :
         # self.nodes_pruned = 0
         self.forward_check_calls = 0
         self.values_pruned = 0 
+
+
+
+        # ------------------------------
+        # optimization
+        # ------------------------------
+        
+
+
+        self.solutions_found = 0
+
+        self.best_schedule = None
+        self.best_score = None
+        self.best_details = None
+
+
+        
+
 
 
     def generate (self) :
@@ -173,11 +200,13 @@ class CustomCPScheduler :
             return None
 
 
-        schedule = self._build_schedule(
+        schedule = self.best_schedule
 
-            self.state.assignments
+        # schedule = self._build_schedule(
 
-        )
+        #     self.state.assignments
+
+        # )
 
 
         print("\nCUSTOM CP")
@@ -213,14 +242,21 @@ class CustomCPScheduler :
         )
 
 
+        # ----------------------------------------------------
+
+        print(
+            "Solutions found:",
+            self.solutions_found,
+        )
+
+        print(
+            "Best score:",
+            self.best_score,
+        )
+
+        # ------------------------------------------------------
+
         return schedule
-
-
-
-
-    
-
-    
 
 
 
@@ -249,10 +285,69 @@ class CustomCPScheduler :
 
         ):
 
-            return True
+
+            schedule = self._build_schedule(
+
+                state.assignments
+
+            )
+
+            score, details = calculate_schedule_score (
+
+                schedule = schedule,
+                surgeries = self.surgeries,
+                soft_constraint = self.soft_constraints,
+
+            )
 
 
-            # Önce surgery seçiliyor
+            score_details = build_score_details (
+
+                score = score,
+                details = details,
+
+            )
+
+
+            self.solutions_found += 1
+
+
+            if (
+
+                self.best_score is None
+                or score > self.best_score
+
+            ):
+
+                self.best_score = score
+                self.best_schedule = schedule
+                self.best_details = score_details
+
+
+            print(
+
+                f"Solution { self.solutions_found } "
+                f"Score: { score }"
+
+            )
+
+
+            return (
+
+                self.solutions_found
+                >=
+                self.solution_target
+
+            )
+
+
+
+            # return False            
+
+            # return True
+
+
+        # Önce surgery seçiliyor
 
 
 
