@@ -49,6 +49,7 @@ class CustomCPScheduler :
         self.surgeries = surgeries
         self.planning_day = planning_day
         self.solution_target = solution_target
+        self.seen_solutions = set ()
 
         # self.lcv_checks = 0
 
@@ -152,7 +153,15 @@ class CustomCPScheduler :
         )
 
 
-        success = self._search (
+        # success = self._search (
+
+        #     state = self.state,
+        #     domains = domains,
+
+        # )
+
+
+        self._search (
 
             state = self.state,
             domains = domains,
@@ -160,12 +169,33 @@ class CustomCPScheduler :
         )
 
 
-        if not success :
+
+        if self.best_schedule is None :
 
 
             print("\nCUSTOM CP")
             print("===========")
             print("No feasible solution")
+
+
+
+            # ----------------------------------------------------
+    
+            print(
+                "Solutions found:",
+                self.solutions_found,
+            )
+    
+            print(
+                "Best score:",
+                self.best_score,
+            )
+    
+            # ------------------------------------------------------
+
+
+
+
             print(
                 "Nodes visited:",
                 self.nodes_visited,
@@ -184,7 +214,7 @@ class CustomCPScheduler :
 
             print   (
             
-                "Forward check calls :",
+                "Forward branches :",
                 self.forward_check_calls,
     
             )
@@ -212,6 +242,25 @@ class CustomCPScheduler :
         print("\nCUSTOM CP")
         print("===========")
         print("Feasible")
+
+
+        # ----------------------------------------------------
+
+        print(
+            "Solutions found:",
+            self.solutions_found,
+        )
+
+        print(
+            "Best score:",
+            self.best_score,
+        )
+
+        # ------------------------------------------------------
+
+
+
+
         print(
             "Nodes visited:",
             self.nodes_visited,
@@ -242,21 +291,9 @@ class CustomCPScheduler :
         )
 
 
-        # ----------------------------------------------------
-
-        print(
-            "Solutions found:",
-            self.solutions_found,
-        )
-
-        print(
-            "Best score:",
-            self.best_score,
-        )
-
-        # ------------------------------------------------------
-
         return schedule
+
+
 
 
 
@@ -271,6 +308,7 @@ class CustomCPScheduler :
     ) : 
 
         self.nodes_visited += 1
+        
 
 
         
@@ -292,19 +330,41 @@ class CustomCPScheduler :
 
             )
 
+
+            signature = self._get_schedule_signature(
+
+                schedule
+
+            )
+
+
+            if signature in self.seen_solutions :
+
+                return False 
+
+
+            self.seen_solutions.add(signature)
+
+
+
+
+
             score, details = calculate_schedule_score (
 
                 schedule = schedule,
                 surgeries = self.surgeries,
                 soft_constraint = self.soft_constraints,
 
+
             )
+
 
 
             score_details = build_score_details (
 
                 score = score,
                 details = details,
+
 
             )
 
@@ -322,6 +382,8 @@ class CustomCPScheduler :
                 self.best_score = score
                 self.best_schedule = schedule
                 self.best_details = score_details
+
+                
 
 
             print(
@@ -525,8 +587,7 @@ class CustomCPScheduler :
                     end_slot = end_slot,
                     room = value.room,
                     surgeon = value.surgeon,
-                    anesthesia_team = 
-                        value.anesthesia_team,
+                    anesthesia_team = value.anesthesia_team,
 
                 )
 
@@ -546,6 +607,37 @@ class CustomCPScheduler :
 
 
         return schedule
+
+
+    # --------------------------------------------
+
+    # helper
+
+    # --------------------------------------------
+
+
+    def _get_schedule_signature (self, schedule) :
+
+
+        return tuple (
+
+            (
+
+                item.patient,
+                item.day_index,
+                item.start_slot,
+                item.room,
+                item.surgeon,
+                item.anesthesia_team,
+
+
+            )
+
+            for item in schedule
+
+        )
+
+
 
 
 

@@ -1,6 +1,13 @@
 from .constraints import is_consistent
 
 
+from .soft_heuristics import (
+
+    calculate_soft_value_cost,
+
+)
+
+
 
 def select_unassigned_surgery (
 
@@ -149,6 +156,8 @@ def order_domain_values(
     surgeries,
     surgeons_by_name,
     slots_per_day,
+    surgeries_by_patient,
+    soft_constraints,
         
 ):
 
@@ -164,6 +173,32 @@ def order_domain_values(
     scored_values = []
 
     for value in values :
+
+
+        if not is_consistent(
+            surgery=surgery,
+            value=value,
+            state=state,
+            surgeons_by_name=surgeons_by_name,
+            slots_per_day=slots_per_day,
+        ):
+            continue
+
+
+
+        soft_cost = calculate_soft_value_cost (
+
+            surgery = surgery,
+            value = value,
+            state = state,
+            surgeries_by_patient = surgeries_by_patient,
+            soft_constraints = soft_constraints,
+
+        )
+
+        
+
+
 
         state.assign (
 
@@ -214,6 +249,8 @@ def order_domain_values(
                     slots_per_day = slots_per_day,
 
                 ):
+                    
+                    
 
                     elimination_count += 1
 
@@ -231,6 +268,7 @@ def order_domain_values(
             (
 
                 elimination_count,
+                soft_cost,
                 value,  
 
             )
@@ -241,7 +279,7 @@ def order_domain_values(
     scored_values.sort  (
 
         key = lambda item : item[0]
-
+]
     )
 
 
