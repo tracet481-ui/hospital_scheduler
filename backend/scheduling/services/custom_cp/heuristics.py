@@ -172,8 +172,7 @@ def order_domain_values(
 
     scored_values = []
 
-    for value in values :
-
+    for value in values:
 
         if not is_consistent(
             surgery=surgery,
@@ -184,102 +183,87 @@ def order_domain_values(
         ):
             continue
 
-
-
-        soft_cost = calculate_soft_value_cost (
-
-            surgery = surgery,
-            value = value,
-            state = state,
-            surgeries_by_patient = surgeries_by_patient,
-            soft_constraints = soft_constraints,
-
-        )
-
-        
-
-
-
-        state.assign (
-
+        # 1) Candidate'i geçici olarak state'e koy
+        state.assign(
             surgery,
             value,
-
         )
 
-
+        # 2) LCV elimination hesabı
         elimination_count = 0
 
-        for other_surgery in surgeries :
+        for other_surgery in surgeries:
 
-            if  (
-
+            if (
                 other_surgery.patient
-                ==
-                surgery.patient
-
-            )   :
-
-                continue
-
-
-            if  (
-
-                other_surgery.patient
-                in
-                state.assignments
-
+                == surgery.patient
             ):
-
                 continue
 
-
-            for other_value in domains [
-
+            if (
                 other_surgery.patient
+                in state.assignments
+            ):
+                continue
 
+            for other_value in domains[
+                other_surgery.patient
             ]:
 
-                if not is_consistent    (
-
-                    surgery = other_surgery,
-                    value = other_value,
-                    state = state,
-                    surgeons_by_name = surgeons_by_name,
-                    slots_per_day = slots_per_day,
-
+                if not is_consistent(
+                    surgery=other_surgery,
+                    value=other_value,
+                    state=state,
+                    surgeons_by_name=surgeons_by_name,
+                    slots_per_day=slots_per_day,
                 ):
-                    
-                    
-
                     elimination_count += 1
 
-
-        state.unassign  (
-
-            surgery,
-            value,
-
+        # 3) Candidate state içindeyken soft cost hesapla
+        soft_cost = calculate_soft_value_cost(
+            surgery=surgery,
+            value=value,
+            state=state,
+            surgeries_by_patient=surgeries_by_patient,
+            soft_constraints=soft_constraints,
         )
 
+        # 4) Priority candidate'in zamanından hesaplanıyor
+        priority_cost = calculate_priority_cost(
+            surgery=surgery,
+            value=value,
+            slots_per_day=slots_per_day,
+        )
 
-        scored_values.append    (
+        # 5) Geçici atamayı geri al
+        state.unassign(
+            surgery,
+            value,
+        )
 
+        # 6) Adayın üç heuristic değerini sakla
+        scored_values.append(
             (
-
                 elimination_count,
+                priority_cost,
                 soft_cost,
-                value,  
-
+                value,
             )
-
         )
 
 
     scored_values.sort  (
 
-        key = lambda item : item[0]
-]
+        # key = lambda item : item[0]
+
+        key = lambda item : (
+
+            item[0],  # elimination_count
+            item[1],  # priority_cost
+            item[2],  # soft_cost
+
+        )
+
     )
 
 
@@ -293,9 +277,50 @@ def order_domain_values(
 
         value
 
-        for _, value in scored_values
+        for _, _, _, value in scored_values
 
     ]
+
+
+
+def calculate_priority_cost (
+
+    surgery,
+    value,
+    slots_per_day,
+        
+) :
+
+    priority_weight = {
+
+        "Kritik" : 100,
+        "Yüksek" : 50,
+        "Orta" : 20,
+        "Düşük" : 5,
+
+    }
+
+
+
+    weight =   priority_weight.get (
+
+        surgery.priority,
+        5,
+        
+    )
+
+
+    global_start = (
+
+        value.day * slots_per_day
+        +
+        value.start_slot
+
+    )
+
+
+    return global_start * weight
+
 
 
         

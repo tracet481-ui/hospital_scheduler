@@ -34,7 +34,7 @@ def calculate_day_balance_cost(
     surgeries_by_patient,
     slider_value,
 ):
-    day_load = 0
+    day_loads = [0, 0, 0, 0, 0 ]
 
     for patient, assigned_value in state.assignments.items():
 
@@ -45,7 +45,25 @@ def calculate_day_balance_cost(
             patient
         ]
 
-        day_load += assigned_surgery.duration
+        # day_loads += assigned_surgery.duration
+
+
+        day_loads[ 
+
+            assigned_value.day 
+
+        ]   +=  assigned_surgery.duration
+
+    
+    
+
+    max_load = max (day_loads)
+
+    min_load = min (day_loads)
+
+
+
+    imbalance = max_load - min_load
 
     # projected_day_load = (
     #     day_load
@@ -58,7 +76,8 @@ def calculate_day_balance_cost(
 
     # return projected_day_load * multiplier
 
-    return day_load * multiplier
+    return imbalance * multiplier
+
 
 
 

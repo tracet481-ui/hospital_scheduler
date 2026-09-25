@@ -54,6 +54,15 @@ class CustomCPScheduler :
         # self.lcv_checks = 0
 
 
+        self.surgeries_by_patient = {
+
+            surgery.patient : surgery
+
+            for surgery in surgeries
+
+        }
+
+
         self.soft_constraints = (
 
             soft_constraints or {}
@@ -450,6 +459,9 @@ class CustomCPScheduler :
             surgeries = self.surgeries,
             surgeons_by_name = self.surgeons_by_name,
             slots_per_day = SLOTS_PER_DAY,
+
+            surgeries_by_patient = self.surgeries_by_patient,
+            soft_constraints = self.soft_constraints,
 
         )
 
