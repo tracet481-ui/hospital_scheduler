@@ -260,6 +260,7 @@ def validate_resource_overlaps (
             second = schedule [j]
 
 
+
             if (
 
                 first.day_index

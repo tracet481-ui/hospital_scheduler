@@ -8,6 +8,13 @@ from .soft_heuristics import (
 )
 
 
+from .soft_heuristics import (
+
+    calculate_combined_cost,
+
+)
+
+
 
 def select_unassigned_surgery (
 
@@ -174,7 +181,7 @@ def order_domain_values(
 
     for value in values:
 
-        if not is_consistent(
+        if not is_consistent(   
             surgery=surgery,
             value=value,
             state=state,
@@ -182,6 +189,20 @@ def order_domain_values(
             slots_per_day=slots_per_day,
         ):
             continue
+
+
+        combined_cost = calculate_combined_cost     (
+
+            surgery = surgery,
+            value = value,
+            state = state,
+            surgeries_by_patiet = surgeries_by_patient,
+            soft_constraints = soft_constraints,
+            slots_per_day = slots_per_day,
+
+        )
+        
+
 
         # 1) Candidate'i geçici olarak state'e koy
         state.assign(
@@ -248,6 +269,7 @@ def order_domain_values(
                 priority_cost,
                 soft_cost,
                 value,
+                combined_cost,
             )
         )
 
