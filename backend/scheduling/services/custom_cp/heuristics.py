@@ -196,7 +196,7 @@ def order_domain_values(
             surgery = surgery,
             value = value,
             state = state,
-            surgeries_by_patiet = surgeries_by_patient,
+            surgeries_by_patient = surgeries_by_patient,
             soft_constraints = soft_constraints,
             slots_per_day = slots_per_day,
 
@@ -266,10 +266,11 @@ def order_domain_values(
         scored_values.append(
             (
                 elimination_count,
-                priority_cost,
-                soft_cost,
-                value,
+                # priority_cost,
+                # soft_cost,
                 combined_cost,
+                value,
+               
             )
         )
 
@@ -282,7 +283,7 @@ def order_domain_values(
 
             item[0],  # elimination_count
             item[1],  # priority_cost
-            item[2],  # soft_cost
+            # item[2],  # soft_cost
 
         )
 
@@ -299,7 +300,9 @@ def order_domain_values(
 
         value
 
-        for _, _, _, value in scored_values
+        # for _, _, _, value in scored_values
+        
+        for _, _, value in scored_values
 
     ]
 

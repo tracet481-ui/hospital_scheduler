@@ -232,6 +232,38 @@ def run_custom_cp_test () :
 
 
 
+    # -------------------------------------------------------
+
+    details = scheduler.best_details
+
+    print("\nOPTIMIZATION REPORT")
+    print("===================")
+
+    print("Priority:", details["priority"]["score"])
+
+    for name in (
+        "day_balance",
+        "anesthesia_balance",
+        "room_idle",
+        "surgeon_idle",
+    ):
+        print(
+            name,
+            details["losses"][name]["loss"],
+        )
+
+    print(
+        "Daily loads:",
+        details["losses"]["day_balance"]
+        ["details"]["daily_loads"],
+    )
+
+    print("Final score:", details["final_score"])
+
+    # ---------------------------------------------------------
+
+
+
 if __name__ == "__main__" :
 
     run_custom_cp_test() 
@@ -332,7 +364,15 @@ def validate_resource_overlaps (
                 })
 
 
+
+
+
+
     return violations
+
+
+
+
 
 
         
