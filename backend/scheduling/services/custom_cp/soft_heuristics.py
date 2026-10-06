@@ -140,31 +140,53 @@ def calculate_combined_cost     (
             # Adayı henüz state'e yazmadan yükü simüle et.
 
 
-        day_loads   [value.day] += surgery.duration
+        # day_loads   [value.day] += surgery.duration
 
 
 
-        day_balance_weight = get_weight     (
+        # day_balance_weight = get_weight     (
 
-            default_weight  =  300,
+        #     default_weight  =  300,
             
-            slider_value =  (soft_constraints or {}).get (
+        #     slider_value =  (soft_constraints or {}).get (
 
-                "day_balance",
-                50,
+        #         "day_balance",
+        #         50,
 
-            ),
+        #     ),
             
-        )
+        # )
 
-        day_balance_cost = (
+        # day_balance_cost = (
 
-            max (day_loads) - min (day_loads)
+        #     max (day_loads) - min (day_loads)
             
-        )   *   day_balance_weight
+        # )   *   day_balance_weight
 
 
-        return priority_cost + day_balance_cost
+
+    current_day_load = day_loads[value.day]
+
+    day_balance_weight = get_weight(
+        default_weight=300,
+        slider_value=(soft_constraints or {}).get(
+            "day_balance",
+            50,
+        ),
+    )
+
+    day_balance_cost = (
+        current_day_load
+        * day_balance_weight
+    )
+
+
+
+
+
+    return (
+        priority_cost + day_balance_cost
+    )
     
 
 

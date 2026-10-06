@@ -39,7 +39,8 @@ class CustomCPScheduler :
         surgeries,
         planning_day,
         soft_constraints = None,
-        solution_target = 10,
+        # solution_target = 10,
+        solution_target = 50,
             
     ):
 
@@ -69,7 +70,7 @@ class CustomCPScheduler :
 
         )
 
-
+        
         self.surgeons_by_name = {
 
             surgeon.name : surgeon
@@ -353,8 +354,6 @@ class CustomCPScheduler :
 
 
             self.seen_solutions.add(signature)
-
-
 
 
 

@@ -201,6 +201,20 @@ def order_domain_values(
             slots_per_day = slots_per_day,
 
         )
+
+
+        # ------------------------------------------------------------
+        
+        if combined_cost is None:
+            raise ValueError(
+                f"combined_cost None geldi: "
+                f"{surgery.patient}, "
+                f"day={value.day}, "
+                f"slot={value.start_slot}"
+            )
+
+
+        # ------------------------------------------------------------
         
 
 
@@ -214,6 +228,7 @@ def order_domain_values(
         elimination_count = 0
 
         for other_surgery in surgeries:
+
 
             if (
                 other_surgery.patient
@@ -294,6 +309,33 @@ def order_domain_values(
         "LCV SCORED VALUES:",
         len(scored_values),
     )
+
+
+    # ------------------------------------------------------------
+    
+    if len(state.assignments) == 0:
+        print(
+            "\nROOT LCV ANALYSIS:",
+            surgery.patient,
+        )
+
+        for item in sorted(
+            scored_values,
+            key=lambda x: (x[0], x[1]),
+        )[:20]:
+            print(
+                "elimination:",
+                item[0],
+                "combined:",
+                item[1],
+                "day:",
+                item[2].day,
+                "slot:",
+                item[2].start_slot,
+            )
+
+
+    # ------------------------------------------------------------
 
 
     return [

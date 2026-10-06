@@ -90,6 +90,7 @@ def run_custom_cp_test () :
         soft_constraints = {
 
             "day_balance" : 50,
+            # "day_balance" : 100,
             "anesthesia_balance" : 50,
             "room_idle" : 50,
             "surgeon_idle" : 50,
