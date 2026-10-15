@@ -39,8 +39,9 @@ class CustomCPScheduler :
         surgeries,
         planning_day,
         soft_constraints = None,
-        # solution_target = 10,
-        solution_target = 50,
+        solution_target = 10,
+        # solution_target = 50,
+
             
     ):
 
@@ -51,6 +52,9 @@ class CustomCPScheduler :
         self.planning_day = planning_day
         self.solution_target = solution_target
         self.seen_solutions = set ()
+
+
+        self.previous_solution = None
 
         # self.lcv_checks = 0
 
@@ -103,6 +107,17 @@ class CustomCPScheduler :
         self.best_schedule = None
         self.best_score = None
         self.best_details = None
+
+
+
+        self.solution_depth_changes = {}
+        # self.previous_solution = None
+
+
+
+        self.branch_solution_limit = 2
+
+        self.branch_limits_reached = 0
 
 
         
@@ -380,6 +395,36 @@ class CustomCPScheduler :
             self.solutions_found += 1
 
 
+            current_solution = state.assignments.copy ()
+
+            if self.previous_solution is not None :
+
+
+                changed_patients = [
+
+                    patient
+                    for patient,value in current_solution.items ()
+                    if self.previous_solution.get(patient) != value
+
+                ]
+
+
+                print   (
+
+                    "CHANGED ASSIGNMENTS : ",
+                    len (changed_patients) ,
+                    changed_patients ,
+
+                )
+
+
+            self.previous_solution = current_solution
+
+
+
+
+
+
             if (
 
                 self.best_score is None
@@ -471,6 +516,19 @@ class CustomCPScheduler :
         )
 
 
+
+        # ---------------------------------------------------------
+        # ---------------------------------------------------------
+
+        solutions_at_entry = self.solutions_found
+
+
+        
+        # ---------------------------------------------------------
+        # ---------------------------------------------------------
+
+
+
         for value in values :
 
             if not is_consistent (
@@ -497,7 +555,7 @@ class CustomCPScheduler :
 
             self.forward_check_calls += 1
 
-            reduced_domains, pruned_count =( forward_check(
+            reduced_domains, pruned_count = forward_check(
 
                 selected_surgery = surgery,
                 surgeries = self.surgeries,
@@ -507,7 +565,7 @@ class CustomCPScheduler :
                         self.surgeons_by_name,
                 slots_per_day = SLOTS_PER_DAY,
 
-            )   )
+            )   
 
             self.values_pruned += pruned_count
 
@@ -538,7 +596,21 @@ class CustomCPScheduler :
 
             )
 
-        #  Burası FOR'un DIŞINDA
+
+            # Son ameliyatın adaylarından en fazla 2 çözüm üret.
+            
+            if (
+                len(state.assignments) == len(self.surgeries) - 1
+                and self.solutions_found - solutions_at_entry >= 2
+            ):
+                self.branch_limits_reached += 1
+                print("BRANCH LIMIT REACHED:", surgery.patient)
+                break
+
+
+
+
+
         self.backtrack_count += 1
 
 

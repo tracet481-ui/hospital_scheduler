@@ -35,6 +35,7 @@ def build_domains(
                 )
 
                 if end_slot > slots_per_day:
+
                     continue
 
                 for room in surgery.compatible_rooms:
